@@ -1,23 +1,39 @@
-// import { ShapeRenderer, ShapeDelegate } from 'src/designer/design-tool';
+import { ShapeRenderer, ShapeDelegate, Point } from '../designer/design-tool';
 
-// export class PencilRenderer implements ShapeRenderer {
-//   delegate?: ShapeDelegate;
+export class PencilRenderer implements ShapeRenderer {
+  delegate?: ShapeDelegate;
+  private points: Point[] = [];
 
-//   reset(): void {
-//   }
+  reset(): void {
+    this.points = [];
+  }
 
-//   draw(ctx: CanvasRenderingContext2D): void {
-//   }
+  draw(ctx: CanvasRenderingContext2D): void {
+    if (this.points.length > 1) {
+      ctx.beginPath();
+      this.points.forEach((p, i) => {
+        if (i) {
+          ctx.lineTo(...p);
+        } else {
+          ctx.moveTo(...p);
+        }
+      });
+      ctx.stroke();
+    }
+  }
 
-//   down(x: number, y: number): void {
-//   }
+  down(p: Point): void {
+    this.points = [p];
+  }
 
-//   move(x: number, y: number, metaKey: boolean): void {
-//   }
+  move(p: Point, _metaKey: boolean): void {
+    this.points.push(p);
+  }
 
-//   up(): void {
-//   }
-
-//   cancel(): void {
-//   }
-// }
+  up(): void {
+    if (this.delegate && (this.points.length > 1)) {
+      this.delegate.addShape({});
+    }
+    this.reset();
+  }
+}

@@ -1,6 +1,6 @@
 import { ToolInfo, ShapeRenderer } from './design-tool';
-// import { PencilRenderer } from 'src/shapes/pencil';
 // import { EllipseRenderer } from 'src/shapes/ellipse';
+import { PencilRenderer } from '../shapes/pencil';
 import { RectangleRenderer } from '../shapes/rectangle';
 import { LineRenderer } from '../shapes/line';
 
@@ -24,12 +24,12 @@ export class DesignToolManager {
       this._tools.forEach((d) => {
         if (d.renders) {
           switch (d.name) {
-            // case 'draw':
-            //   this._renderers!.set(d.name, new PencilRenderer());
-            //   break;
             // case 'ellipse':
             //   this._renderers!.set(d.name, new EllipseRenderer());
             //   break;
+            case 'draw':
+              this._renderers!.set(d.name, new PencilRenderer());
+              break;
             case 'rectangle':
               this._renderers!.set(d.name, new RectangleRenderer());
               break;

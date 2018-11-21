@@ -23,8 +23,21 @@ export class LineRenderer implements ShapeRenderer {
     this.p1 = p;
   }
 
-  move(p: Point, _metaKey: boolean): void {
+  move(p: Point, metaKey: boolean): void {
     this.p2 = p;
+    if (metaKey && this.p1) {
+      const angle = Math.abs((180 / Math.PI) * Math.atan((this.p2[1] - this.p1[1]) / (this.p2[0] - this.p1[0])));
+      if (angle < 30) {
+        this.p2 = [p[0], this.p1[1]];
+      } else if (angle > 60) {
+        this.p2 = [this.p1[0], p[1]];
+      } else {
+        const dx = p[0] - this.p1[0];
+        const dy = p[1] - this.p1[1];
+        const sign = (dx * dy) ? ((dx * dy) / Math.abs(dx * dy)) : 1;
+        this.p2 = [p[0], this.p1[1] + sign * dx];
+      }
+    }
   }
 
   up(): void {
