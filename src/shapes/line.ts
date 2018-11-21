@@ -14,7 +14,7 @@ export class LineRenderer implements ShapeRenderer {
     if (this.p1 && this.p2) {
       ctx.beginPath();
       ctx.moveTo(this.p1[0], this.p1[1]);
-      ctx.lineTo(this.p1[0], this.p1[1]);
+      ctx.lineTo(this.p2[0], this.p2[1]);
       ctx.stroke();
     }
   }

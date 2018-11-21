@@ -1,7 +1,7 @@
 import { ToolInfo, ShapeRenderer } from './design-tool';
 // import { PencilRenderer } from 'src/shapes/pencil';
-// import { RectangleRenderer } from 'src/shapes/rectangle';
 // import { EllipseRenderer } from 'src/shapes/ellipse';
+import { RectangleRenderer } from '../shapes/rectangle';
 import { LineRenderer } from '../shapes/line';
 
 export class DesignToolManager {
@@ -27,12 +27,12 @@ export class DesignToolManager {
             // case 'draw':
             //   this._renderers!.set(d.name, new PencilRenderer());
             //   break;
-            // case 'rectangle':
-            //   this._renderers!.set(d.name, new RectangleRenderer());
-            //   break;
             // case 'ellipse':
             //   this._renderers!.set(d.name, new EllipseRenderer());
             //   break;
+            case 'rectangle':
+              this._renderers!.set(d.name, new RectangleRenderer());
+              break;
             case 'line':
               this._renderers!.set(d.name, new LineRenderer());
               break;
