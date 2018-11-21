@@ -2,8 +2,8 @@ import { ShapeRenderer, ShapeDelegate, Point, isSamePoint } from '../designer/de
 
 export class RectangleRenderer implements ShapeRenderer {
   delegate?: ShapeDelegate;
-  private p1?: Point;
-  private p2?: Point;
+  protected p1?: Point;
+  protected p2?: Point;
 
   reset(): void {
     delete this.p1;
