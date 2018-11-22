@@ -1,8 +1,7 @@
 import { BaseElement, html, element, property } from '../base-element.js';
 import { debounce } from '../utils.js';
 import { toolManager } from './design-tool-manager.js';
-import { ShapeRenderer } from './design-tool.js';
-import { Point } from './draw-canvas.js';
+import { ShapeRenderer, Point } from './design-tool.js';
 
 @element('design-slate')
 export class DesignSlate extends BaseElement {
