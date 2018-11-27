@@ -1,13 +1,18 @@
-import { ShapeRenderer, ShapeDelegate, Point, isSamePoint } from '../designer/design-tool';
+import { Sketcher, SketchDelegate } from '../../designer/design-tool';
+import { Point, isSamePoint } from '../../designer/design-common';
 
-export class RectangleRenderer implements ShapeRenderer {
-  delegate?: ShapeDelegate;
+export class RectSketcher implements Sketcher {
+  private delegate?: SketchDelegate;
   protected p1?: Point;
   protected p2?: Point;
 
-  reset(): void {
+  private reset(): void {
     delete this.p1;
     delete this.p2;
+  }
+
+  setDelegate(delegate: SketchDelegate): void {
+    this.delegate = delegate;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -34,11 +39,18 @@ export class RectangleRenderer implements ShapeRenderer {
   up(): void {
     if (this.p1 && this.p2) {
       if (!isSamePoint(this.p1, this.p2)) {
-        if (this.delegate) {
-          this.delegate.addShape({});
-        }
+        this.addShape();
       }
     }
     this.reset();
+  }
+
+  protected addShape() {
+    if (this.delegate) {
+      this.delegate.addShape({
+        type: 'rectangle',
+        points: [this.p1!, this.p2!]
+      });
+    }
   }
 }

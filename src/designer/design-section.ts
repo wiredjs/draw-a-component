@@ -1,11 +1,14 @@
 import { BaseElement, html, element, property } from '../base-element.js';
 import { flexStyles } from '../flex-styles.js';
+import { Shape, ToolType } from './design-tool.js';
 import './design-palette.js';
 import './design-slate';
+import './design-canvas';
 
 @element('design-section')
 export class DesignSection extends BaseElement {
-  @property() currentTool = 'draw';
+  @property() currentTool: ToolType = 'pencil';
+  @property() shapes: Shape[] = [];
 
   render() {
     return html`
@@ -29,8 +32,16 @@ export class DesignSection extends BaseElement {
     </style>
     <design-palette .selected="${this.currentTool}" @select="${(e: CustomEvent) => { this.currentTool = e.detail.name; }}"></design-palette>
     <div class="flex" style="position: relative;">
-      <design-slate .currentTool="${this.currentTool}"></design-slate>
+      <design-canvas .shapes="${this.shapes}"></design-canvas>
+      <design-slate .currentTool="${this.currentTool}" @shape="${this.addShape}"></design-slate>
     </div>
     `;
+  }
+
+  private addShape(e: CustomEvent) {
+    const shape = e.detail as Shape;
+    if (shape) {
+      this.shapes = [...this.shapes, shape];
+    }
   }
 }

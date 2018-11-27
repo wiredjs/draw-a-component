@@ -1,23 +1,17 @@
 import { BaseElement, html, element, property } from '../base-element.js';
 import { debounce } from '../utils.js';
-import { toolManager } from './design-tool-manager.js';
-import { ShapeRenderer, Point } from './design-tool.js';
+import { Shape, SketchDelegate, Sketcher, toolManager, ToolType } from './design-tool.js';
+import { Point } from './design-common.js';
 
 @element('design-slate')
-export class DesignSlate extends BaseElement {
+export class DesignSlate extends BaseElement implements SketchDelegate {
   @property({ type: Number }) width = 300;
   @property({ type: Number }) height = 300;
-  @property({ type: String }) currentTool = '';
+  @property({ type: String }) currentTool?: ToolType;
 
-  private renderers: Map<string, ShapeRenderer>;
   private drawing = false;
   private _dirty = false;
   private resizeHandler = debounce(this.onResize.bind(this), 250, false, this);
-
-  constructor() {
-    super();
-    this.renderers = toolManager.renderers;
-  }
 
   render() {
     return html`
@@ -29,7 +23,6 @@ export class DesignSlate extends BaseElement {
       }
       canvas {
         display: block;
-        outline: 1px solid;
         position: absolute;
         top: 0;
         left: 0;
@@ -43,16 +36,22 @@ export class DesignSlate extends BaseElement {
     `;
   }
 
-  get canvas(): HTMLCanvasElement {
+  private get canvas(): HTMLCanvasElement {
     return this.$('canvas') as HTMLCanvasElement;
   }
 
-  get ctx(): CanvasRenderingContext2D {
+  private get ctx(): CanvasRenderingContext2D {
     return this.canvas.getContext('2d')!;
   }
 
-  get current(): ShapeRenderer | undefined {
-    return this.renderers.get(this.currentTool);
+  private get current(): Sketcher | undefined {
+    if (this.currentTool) {
+      const tool = toolManager.byType(this.currentTool);
+      if (tool && tool.sketches) {
+        return tool.getSketcher(this)!;
+      }
+    }
+    return undefined;
   }
 
   firstUpdated() {
@@ -136,5 +135,9 @@ export class DesignSlate extends BaseElement {
         this.dirty = true;
       }
     }
+  }
+
+  addShape(shape: Shape) {
+    this.fireEvent('shape', shape);
   }
 }

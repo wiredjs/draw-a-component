@@ -1,13 +1,18 @@
-import { ShapeRenderer, ShapeDelegate, Point, isSamePoint } from '../designer/design-tool';
+import { Sketcher, SketchDelegate } from '../../designer/design-tool';
+import { Point, isSamePoint } from '../../designer/design-common';
 
-export class LineRenderer implements ShapeRenderer {
-  delegate?: ShapeDelegate;
-  private p1?: Point;
-  private p2?: Point;
+export class LineSketcher implements Sketcher {
+  private delegate?: SketchDelegate;
+  protected p1?: Point;
+  protected p2?: Point;
 
-  reset(): void {
+  private reset(): void {
     delete this.p1;
     delete this.p2;
+  }
+
+  setDelegate(delegate: SketchDelegate): void {
+    this.delegate = delegate;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -44,7 +49,10 @@ export class LineRenderer implements ShapeRenderer {
     if (this.p1 && this.p2) {
       if (!isSamePoint(this.p1, this.p2)) {
         if (this.delegate) {
-          this.delegate.addShape({});
+          this.delegate.addShape({
+            type: 'line',
+            points: [this.p1, this.p2]
+          });
         }
       }
     }

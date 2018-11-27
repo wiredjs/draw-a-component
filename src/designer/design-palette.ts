@@ -1,18 +1,17 @@
 import { BaseElement, html, element } from '../base-element.js';
-import { toolManager } from './design-tool-manager.js';
 import { property } from '@polymer/lit-element';
-import { ToolInfo } from './design-tool.js';
 import { repeat } from 'lit-html/directives/repeat';
+import { Tool, toolManager } from './design-tool.js';
 import '../components/dac-icon.js';
 
 @element('design-palette')
 export class DesignPalette extends BaseElement {
-  @property() tools: ToolInfo[];
+  @property() tools: Tool[];
   @property() selected: string = '';
 
   constructor() {
     super();
-    this.tools = toolManager.tools;
+    this.tools = toolManager.list;
   }
 
   render() {
@@ -20,10 +19,7 @@ export class DesignPalette extends BaseElement {
     <style>
       :host {
         position: relative;
-        overflow-x: hidden;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        width: 65px;
+        width: 50px;
         background: var(--medium-grey);
         color: white;
       }
@@ -39,6 +35,7 @@ export class DesignPalette extends BaseElement {
         text-transform: capitalize;
         letter-spacing: 0.05em;
         transition: color 0.1s ease, background 0.1s ease;
+        position: relative;
       }
       button:hover {
         color: var(--highlight-blue);
@@ -47,16 +44,35 @@ export class DesignPalette extends BaseElement {
         background: var(--highlight-blue);
         color: white;
       }
+      button .buttonName {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        background: var(--medium-grey);
+        padding: 8px 6px 8px 2px;
+        line-height: 1;
+        border-radius: 0 3px 3px 0;
+        margin-top: -13px;
+        color: white;
+      }
+      button:hover .buttonName {
+        display: block;
+      }
+      button.selected:hover .buttonName {
+        background: var(--highlight-blue);
+        color: white;
+      }
     </style>
     ${repeat(
         this.tools,
-        (d) => d.name,
+        (d) => d.type,
         (d) => {
           return html`
             <div>
-              <button name="${d.name}" title="${d.title}" class="${this.selected === d.name ? 'selected' : ''}" @click="${() => this.fireEvent('select', { name: d.name })}">
+              <button name="${d.type}" class="${this.selected === d.type ? 'selected' : ''}" @click="${() => this.fireEvent('select', { name: d.type })}">
                 <dac-icon .icon="${d.icon}"></dac-icon>
-                <div>${d.name}</div>
+                <div class="buttonName">${d.type}</div>
               </button>
             </div>
           `;

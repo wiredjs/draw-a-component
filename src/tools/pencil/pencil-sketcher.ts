@@ -1,11 +1,16 @@
-import { ShapeRenderer, ShapeDelegate, Point } from '../designer/design-tool';
+import { Sketcher, SketchDelegate } from '../../designer/design-tool';
+import { Point } from '../../designer/design-common';
 
-export class PencilRenderer implements ShapeRenderer {
-  delegate?: ShapeDelegate;
+export class PencilSketcher implements Sketcher {
+  private delegate?: SketchDelegate;
   private points: Point[] = [];
 
-  reset(): void {
+  private reset(): void {
     this.points = [];
+  }
+
+  setDelegate(delegate: SketchDelegate): void {
+    this.delegate = delegate;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -32,7 +37,10 @@ export class PencilRenderer implements ShapeRenderer {
 
   up(): void {
     if (this.delegate && (this.points.length > 1)) {
-      this.delegate.addShape({});
+      this.delegate.addShape({
+        type: 'pencil',
+        points: this.points
+      });
     }
     this.reset();
   }
