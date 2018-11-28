@@ -1,5 +1,5 @@
 import { Sketcher, SketchDelegate } from '../../designer/design-tool';
-import { Point } from '../../designer/design-common';
+import { Point, newId } from '../../designer/design-common';
 
 export class PencilSketcher implements Sketcher {
   private delegate?: SketchDelegate;
@@ -38,6 +38,7 @@ export class PencilSketcher implements Sketcher {
   up(): void {
     if (this.delegate && (this.points.length > 1)) {
       this.delegate.addShape({
+        id: newId(),
         type: 'pencil',
         points: this.points
       });

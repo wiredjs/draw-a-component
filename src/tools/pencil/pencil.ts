@@ -24,7 +24,8 @@ export class Pencil implements Tool {
     return this.sketcher;
   }
 
-  draw(_shape: Shape, _parent: SVGElement): void {
+  draw(_shape: Shape): SVGElement | null {
+    return null;
   }
 
   editor(_shape: Shape, _parent: SVGElement): void {

@@ -1,5 +1,5 @@
 import { Sketcher, SketchDelegate } from '../../designer/design-tool';
-import { Point, isSamePoint } from '../../designer/design-common';
+import { Point, isSamePoint, newId } from '../../designer/design-common';
 
 export class LineSketcher implements Sketcher {
   private delegate?: SketchDelegate;
@@ -50,6 +50,7 @@ export class LineSketcher implements Sketcher {
       if (!isSamePoint(this.p1, this.p2)) {
         if (this.delegate) {
           this.delegate.addShape({
+            id: newId(),
             type: 'line',
             points: [this.p1, this.p2]
           });

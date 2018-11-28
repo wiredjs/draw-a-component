@@ -12,7 +12,7 @@ export interface Tool {
   readonly icon: string;
   readonly sketches: boolean;
   getSketcher(delegate: SketchDelegate): Sketcher | null;
-  draw(shape: Shape, parent: SVGElement): void;
+  draw(shape: Shape): SVGElement | null;
   editor(shape: Shape, parent: SVGElement): void;
 }
 
@@ -28,6 +28,7 @@ export interface SketchDelegate {
 }
 
 export interface Shape {
+  id: string;
   type: ToolType;
   points: Point[];
   properties?: any;

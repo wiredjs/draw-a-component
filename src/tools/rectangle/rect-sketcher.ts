@@ -1,5 +1,5 @@
 import { Sketcher, SketchDelegate } from '../../designer/design-tool';
-import { Point, isSamePoint } from '../../designer/design-common';
+import { Point, isSamePoint, newId } from '../../designer/design-common';
 
 export class RectSketcher implements Sketcher {
   private delegate?: SketchDelegate;
@@ -48,6 +48,7 @@ export class RectSketcher implements Sketcher {
   protected addShape() {
     if (this.delegate) {
       this.delegate.addShape({
+        id: newId(),
         type: 'rectangle',
         points: [this.p1!, this.p2!]
       });

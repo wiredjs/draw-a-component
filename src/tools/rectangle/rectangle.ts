@@ -1,5 +1,6 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { RectSketcher } from './rect-sketcher';
+import { svgNode } from '../../designer/design-common';
 
 export class Rectangle implements Tool {
   private sketcher?: RectSketcher;
@@ -24,7 +25,14 @@ export class Rectangle implements Tool {
     return this.sketcher;
   }
 
-  draw(_shape: Shape, _parent: SVGElement): void {
+  draw(shape: Shape): SVGElement | null {
+    const p1 = shape.points[0];
+    const p2 = shape.points[1];
+    const x = `${Math.min(p1[0], p2[0])}`;
+    const y = `${Math.min(p1[1], p2[1])}`;
+    const width = `${Math.abs(p1[0] - p2[0])}`;
+    const height = `${Math.abs(p1[1] - p2[1])}`;
+    return svgNode('rect', { x, y, width, height });
   }
 
   editor(_shape: Shape, _parent: SVGElement): void {

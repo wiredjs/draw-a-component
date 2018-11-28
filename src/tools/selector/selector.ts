@@ -17,7 +17,8 @@ export class Selector implements Tool {
     return null;
   }
 
-  draw(_shape: Shape, _parent: SVGElement): void {
+  draw(_shape: Shape): SVGElement | null {
+    return null;
   }
 
   editor(_shape: Shape, _parent: SVGElement): void {
