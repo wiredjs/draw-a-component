@@ -1,5 +1,6 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { PencilSketcher } from './pencil-sketcher';
+import { svgNode } from '../../designer/design-common';
 
 export class Pencil implements Tool {
   private sketcher?: PencilSketcher;
@@ -24,8 +25,15 @@ export class Pencil implements Tool {
     return this.sketcher;
   }
 
-  draw(_shape: Shape): SVGElement | null {
-    return null;
+  draw(shape: Shape): SVGElement | null {
+    if (shape.points.length < 2) {
+      return null;
+    }
+    let d = '';
+    shape.points.forEach((p, i) => {
+      d = i ? `${d} L${p[0]} ${p[1]}` : `M${p[0]} ${p[1]}`;
+    });
+    return svgNode('path', { d });
   }
 
   editor(_shape: Shape, _parent: SVGElement): void {
