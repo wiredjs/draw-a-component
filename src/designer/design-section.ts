@@ -9,8 +9,10 @@ import './design-canvas';
 @element('design-section')
 export class DesignSection extends BaseElement {
   @property() currentTool: ToolType = 'pencil';
+  @property() selectedShape: string | null = null;
 
   render() {
+    const slateClass = (this.currentTool === 'select') ? 'hidden' : '';
     return html`
     ${flexStyles}
     <style>
@@ -29,11 +31,14 @@ export class DesignSection extends BaseElement {
         width: 100%;
         height: 100%;
       }
+      .hidden {
+        display: none;
+      }
     </style>
     <design-palette .selected="${this.currentTool}" @select="${(e: CustomEvent) => { this.currentTool = e.detail.name; }}"></design-palette>
     <div class="flex" style="position: relative;">
-      <design-canvas id="dc" ></design-canvas>
-      <design-slate .currentTool="${this.currentTool}" @shape="${this.addShape}"></design-slate>
+      <design-canvas .selected="${this.selectedShape}" id="dc" @select="${this.onSelect}"></design-canvas>
+      <design-slate .currentTool="${this.currentTool}" class="${slateClass}" @shape="${this.addShape}"></design-slate>
     </div>
     `;
   }
@@ -46,6 +51,15 @@ export class DesignSection extends BaseElement {
     const shape = e.detail as Shape;
     if (shape) {
       this.canvas.addShape(shape);
+    }
+  }
+
+  private onSelect(e: CustomEvent) {
+    const shape = e.detail as Shape;
+    if (shape) {
+      this.selectedShape = shape.id;
+    } else {
+      this.selectedShape = null;
     }
   }
 }

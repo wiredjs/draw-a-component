@@ -2,10 +2,16 @@ import { BaseElement, html, element } from '../base-element.js';
 import { Shape, toolManager } from './design-tool.js';
 import { svgNode } from './design-common.js';
 
+interface ShapeItem {
+  shape: Shape;
+  node: SVGElement;
+}
+
 @element('design-canvas')
 export class DesignCanvas extends BaseElement {
   private readonly shapes: Shape[] = [];
-  private readonly shapeMap: Map<string, Shape> = new Map();
+  private readonly shapeMap: Map<string, ShapeItem> = new Map();
+  private selectedId: string | null = null;
 
   render() {
     return html`
@@ -25,11 +31,14 @@ export class DesignCanvas extends BaseElement {
         box-sizing: border-box;
       }
       g {
-        fill: none;
+        fill: transparent;
         stroke: #000;
       }
+      .hidden {
+        display: none;
+      }
     </style>
-    <svg></svg>
+    <svg @click="${this.onBgClick}"></svg>
     `;
   }
 
@@ -40,7 +49,7 @@ export class DesignCanvas extends BaseElement {
   //   }
   // }
 
-  get svg(): SVGSVGElement {
+  private get svg(): SVGSVGElement {
     return this.$$('svg') as any as SVGSVGElement;
   }
 
@@ -51,16 +60,41 @@ export class DesignCanvas extends BaseElement {
       if (node) {
         const g = svgNode('g', { id: `g-${shape.id}` });
         g.appendChild(node);
-        g.addEventListener('click', () => this.onSelect(shape));
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.onSelect(shape);
+        });
         this.svg.appendChild(g);
+        this.shapes.push(shape);
+        this.shapeMap.set(shape.id, { shape, node: g });
       }
     }
-    this.shapes.push(shape);
-    this.shapeMap.set(shape.id, shape);
+  }
+
+  private onBgClick() {
+    this.fireEvent('select');
   }
 
   private onSelect(shape: Shape) {
-    console.log('shape select', shape.id, shape.type);
+    this.fireEvent('select', shape);
+  }
+
+  set selected(id: string | null) {
+    if (id !== this.selectedId) {
+      if (this.selectedId) {
+        const s = this.shapeMap.get(this.selectedId);
+        if (s) {
+          s.node.classList.remove('hidden');
+        }
+      }
+      this.selectedId = id;
+      if (this.selectedId) {
+        const s = this.shapeMap.get(this.selectedId);
+        if (s) {
+          s.node.classList.add('hidden');
+        }
+      }
+    }
   }
 
 }
