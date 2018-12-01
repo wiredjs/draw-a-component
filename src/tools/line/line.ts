@@ -1,9 +1,12 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { LineSketcher } from './line-sketcher';
 import { svgNode } from '../../designer/design-common';
+import { LineEditor } from './line-editor';
+import './line-editor';
 
 export class Line implements Tool {
   private sketcher?: LineSketcher;
+  private _editor?: LineEditor;
 
   get type(): ToolType {
     return 'line';
@@ -36,6 +39,11 @@ export class Line implements Tool {
     });
   }
 
-  editor(_shape: Shape, _parent: SVGElement): void {
+  editor(shape: Shape): HTMLElement | null {
+    if (!this._editor) {
+      this._editor = new LineEditor();
+    }
+    this._editor.shape = shape;
+    return this._editor;
   }
 }

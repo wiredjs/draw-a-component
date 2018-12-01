@@ -13,7 +13,7 @@ export interface Tool {
   readonly sketches: boolean;
   getSketcher(delegate: SketchDelegate): Sketcher | null;
   draw(shape: Shape): SVGElement | null;
-  editor(shape: Shape, parent: SVGElement): void;
+  editor(shape: Shape): HTMLElement | null;
 }
 
 export interface Sketcher {

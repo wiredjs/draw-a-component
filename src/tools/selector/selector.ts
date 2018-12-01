@@ -21,6 +21,7 @@ export class Selector implements Tool {
     return null;
   }
 
-  editor(_shape: Shape, _parent: SVGElement): void {
+  editor(_shape: Shape): HTMLElement | null {
+    return null;
   }
 }

@@ -35,6 +35,7 @@ export class Ellipse implements Tool {
     return svgNode('ellipse', { cx, cy, rx, ry });
   }
 
-  editor(_shape: Shape, _parent: SVGElement): void {
+  editor(_shape: Shape): HTMLElement | null {
+    return null;
   }
 }

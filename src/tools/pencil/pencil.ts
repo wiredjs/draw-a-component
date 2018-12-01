@@ -36,6 +36,7 @@ export class Pencil implements Tool {
     return svgNode('path', { d });
   }
 
-  editor(_shape: Shape, _parent: SVGElement): void {
+  editor(_shape: Shape): HTMLElement | null {
+    return null;
   }
 }

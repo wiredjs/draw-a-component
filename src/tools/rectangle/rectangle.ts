@@ -1,9 +1,12 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { RectSketcher } from './rect-sketcher';
 import { svgNode } from '../../designer/design-common';
+import { RectangleEditor } from './rectangle-editor';
+import './rectangle-editor';
 
 export class Rectangle implements Tool {
   private sketcher?: RectSketcher;
+  private _editor?: RectangleEditor;
 
   get type(): ToolType {
     return 'rectangle';
@@ -35,6 +38,11 @@ export class Rectangle implements Tool {
     return svgNode('rect', { x, y, width, height });
   }
 
-  editor(_shape: Shape, _parent: SVGElement): void {
+  editor(shape: Shape): HTMLElement | null {
+    if (!this._editor) {
+      this._editor = new RectangleEditor();
+    }
+    this._editor.shape = shape;
+    return this._editor;
   }
 }
