@@ -137,7 +137,7 @@ export class RectangleEditor extends BaseElement {
     if (this.shape) {
       this.g = this.drawShape(this.shape);
       this.go = this.drawShape(this.shape);
-      if (this.go) {
+      if (this.g && this.go) {
         this.go.classList.add('overlay');
       }
     }
