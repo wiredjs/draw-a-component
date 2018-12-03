@@ -15,10 +15,12 @@ export class RectangleEditor extends BaseElement {
   private originPoint?: Point;
   private dragState?: State;
   private shapeString = '';
+  private updateShapePending = false;
 
-  private overlayUpHandler = () => this.overlayUp();
-  private overlayDownHandler = (e: Event) => this.overlayDown(e as CustomEvent);
-  private overlayTrackHandler = (e: Event) => this.overlayTrack(e as CustomEvent);
+  private overlayUpHandler = this.overlayUp.bind(this);
+  private overlayDownHandler = this.overlayDown.bind(this);
+  private overlayTrackHandler = this.overlayTrack.bind(this);
+  private keyboardListener = this.onKeyDown.bind(this);
 
   private get svg(): SVGSVGElement {
     return this.$$('svg') as any as SVGSVGElement;
@@ -29,6 +31,7 @@ export class RectangleEditor extends BaseElement {
     <style>
       :host {
         display: block;
+        outline: none;
         pointer-events: none;
       }
       svg {
@@ -131,11 +134,18 @@ export class RectangleEditor extends BaseElement {
 
   connectedCallback() {
     super.connectedCallback();
+    if (this.shape) {
+      this.focus();
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.detachListeners();
+  }
+
+  firstUpdated() {
+    this.tabIndex = 0;
   }
 
   private get state(): State {
@@ -152,6 +162,7 @@ export class RectangleEditor extends BaseElement {
 
   private detachListeners() {
     const overlay = this.$('overlay');
+    this.removeEventListener('keydown', this.keyboardListener);
     removeListener(overlay, 'up', this.overlayUpHandler);
     removeListener(overlay, 'down', this.overlayDownHandler);
     removeListener(overlay, 'track', this.overlayTrackHandler);
@@ -160,6 +171,7 @@ export class RectangleEditor extends BaseElement {
   private attachListeners() {
     this.detachListeners();
     const overlay = this.$('overlay');
+    this.addEventListener('keydown', this.keyboardListener);
     addListener(overlay, 'up', this.overlayUpHandler);
     addListener(overlay, 'down', this.overlayDownHandler);
     addListener(overlay, 'track', this.overlayTrackHandler);
@@ -170,7 +182,12 @@ export class RectangleEditor extends BaseElement {
       this.state = 'default';
       this.resetShape();
       this.refreshControls();
-      this.attachListeners();
+      if (this.shape) {
+        this.attachListeners();
+        this.focus();
+      } else {
+        this.detachListeners();
+      }
     }
   }
 
@@ -234,14 +251,34 @@ export class RectangleEditor extends BaseElement {
     }
   }
 
+  private onKeyDown(event: KeyboardEvent) {
+    if (this.shadowShape && this.state === 'default') {
+      const meta = event.shiftKey || event.metaKey || event.ctrlKey || event.altKey;
+      switch (event.keyCode) {
+        case 37:
+          this.shiftShadowShape([meta ? -5 : -1, 0]);
+          this.deferredUpdateShape();
+          break;
+        case 38:
+          this.shiftShadowShape([0, meta ? -5 : -1]);
+          this.deferredUpdateShape();
+          break;
+        case 39:
+          this.shiftShadowShape([meta ? 5 : 1, 0]);
+          this.deferredUpdateShape();
+          break;
+        case 40:
+          this.shiftShadowShape([0, meta ? 5 : 1]);
+          this.deferredUpdateShape();
+          break;
+      }
+    }
+  }
+
   private overlayUp() {
     if (this.state !== 'default') {
       this.state = 'default';
-      const shadowString = JSON.stringify(this.shadowShape);
-      if (shadowString !== this.shapeString) {
-        this.fireEvent('update-shape', this.shadowShape);
-        this.shape = JSON.parse(shadowString) as Shape;
-      }
+      this.updateShape();
     }
   }
 
@@ -256,13 +293,35 @@ export class RectangleEditor extends BaseElement {
     if (this.state === 'moving') {
       const p: Point = [event.detail.x, event.detail.y];
       const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-      if (this.shadowShape) {
-        this.shadowShape.points.forEach((p, i) => {
-          p[0] = this.shape!.points[i][0] + diff[0];
-          p[1] = this.shape!.points[i][1] + diff[1];
-          setTimeout(() => this.redrawShadow());
-        });
-      }
+      this.shiftShadowShape(diff);
+    }
+  }
+
+  private shiftShadowShape(diff: Point) {
+    if (this.shadowShape) {
+      this.shadowShape.points.forEach((p, i) => {
+        p[0] = this.shape!.points[i][0] + diff[0];
+        p[1] = this.shape!.points[i][1] + diff[1];
+        Promise.resolve().then(() => this.redrawShadow());
+      });
+    }
+  }
+
+  private updateShape() {
+    const shadowString = JSON.stringify(this.shadowShape);
+    if (shadowString !== this.shapeString) {
+      this.fireEvent('update-shape', this.shadowShape);
+      this.shape = JSON.parse(shadowString) as Shape;
+    }
+  }
+
+  private deferredUpdateShape() {
+    if (!this.updateShapePending) {
+      this.updateShapePending = true;
+      setTimeout(() => {
+        this.updateShapePending = false;
+        this.updateShape();
+      }, 200);
     }
   }
 }
