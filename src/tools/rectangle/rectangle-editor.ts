@@ -135,6 +135,7 @@ export class RectangleEditor extends BaseElement {
   connectedCallback() {
     super.connectedCallback();
     if (this.shape) {
+      this.state = 'default';
       this.focus();
     }
   }
