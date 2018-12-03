@@ -47,7 +47,7 @@ export class DesignSection extends BaseElement {
     <div class="flex" style="position: relative;">
       <design-canvas .selected="${this.selectedShape ? this.selectedShape.id : null}" id="dc" @select="${this.onSelect}"></design-canvas>
       <design-slate .currentTool="${this.currentTool}" class="${slateClass}" @shape="${this.addShape}"></design-slate>
-      <div id="editorPanel" class="hidden"></div>
+      <div id="editorPanel" class="hidden" @update-shape="${this.updateShape}"></div>
     </div>
     `;
   }
@@ -60,6 +60,13 @@ export class DesignSection extends BaseElement {
     const shape = e.detail as Shape;
     if (shape) {
       this.canvas.addShape(shape);
+    }
+  }
+
+  private updateShape(e: CustomEvent) {
+    const shape = e.detail as Shape;
+    if (shape) {
+      this.canvas.updateShape(shape);
     }
   }
 

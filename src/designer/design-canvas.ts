@@ -9,7 +9,6 @@ interface ShapeItem {
 
 @element('design-canvas')
 export class DesignCanvas extends BaseElement {
-  private readonly shapes: Shape[] = [];
   private readonly shapeMap: Map<string, ShapeItem> = new Map();
   private selectedId: string | null = null;
 
@@ -34,8 +33,8 @@ export class DesignCanvas extends BaseElement {
         fill: transparent;
         stroke: #000;
       }
-      .hidden {
-        display: none;
+      .selected {
+        stroke: #aaa;
       }
     </style>
     <svg @click="${this.onBgClick}"></svg>
@@ -55,28 +54,53 @@ export class DesignCanvas extends BaseElement {
 
   addShape(shape: Shape) {
     if (shape && shape.type) {
-      const tool = toolManager.byType(shape.type);
-      const node = tool.draw(shape);
-      if (node) {
+      const g = this.renderShape(shape);
+      if (g) {
+        this.svg.appendChild(g);
+        this.shapeMap.set(shape.id, { shape, node: g });
+      }
+    }
+  }
+
+  updateShape(shape: Shape) {
+    if (shape && this.shapeMap.has(shape.id)) {
+      const current = this.shapeMap.get(shape.id)!;
+      this.renderShape(shape, current.node);
+      current.shape = shape;
+    }
+  }
+
+  private renderShape(shape: Shape, parent?: SVGElement): SVGElement | null {
+    const tool = toolManager.byType(shape.type);
+    const node = tool.draw(shape);
+    if (node) {
+      if (parent) {
+        while (parent.lastChild) {
+          parent.removeChild(parent.lastChild);
+        }
+        parent.appendChild(node);
+        return null;
+      } else {
         const g = svgNode('g', { id: `g-${shape.id}` });
         g.appendChild(node);
         g.addEventListener('click', (e) => {
           e.stopPropagation();
-          this.onSelect(shape);
+          this.onSelect(shape.id);
         });
-        this.svg.appendChild(g);
-        this.shapes.push(shape);
-        this.shapeMap.set(shape.id, { shape, node: g });
+        return g;
       }
     }
+    return null;
   }
 
   private onBgClick() {
     this.fireEvent('select');
   }
 
-  private onSelect(shape: Shape) {
-    this.fireEvent('select', shape);
+  private onSelect(shapeId: string) {
+    if (this.shapeMap.has(shapeId)) {
+      this.fireEvent('select', this.shapeMap.get(shapeId)!.shape);
+    }
   }
 
   set selected(id: string | null) {
@@ -84,14 +108,14 @@ export class DesignCanvas extends BaseElement {
       if (this.selectedId) {
         const s = this.shapeMap.get(this.selectedId);
         if (s) {
-          s.node.classList.remove('hidden');
+          s.node.classList.remove('selected');
         }
       }
       this.selectedId = id;
       if (this.selectedId) {
         const s = this.shapeMap.get(this.selectedId);
         if (s) {
-          s.node.classList.add('hidden');
+          s.node.classList.add('selected');
         }
       }
     }

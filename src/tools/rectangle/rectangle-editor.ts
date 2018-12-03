@@ -1,14 +1,28 @@
 import { BaseElement, html, element, property } from '../../base-element.js';
 import { Shape, toolManager } from '../../designer/design-tool';
-import { svgNode } from '../../designer/design-common';
+import { svgNode, Point } from '../../designer/design-common';
 import { PropertyValues } from '@polymer/lit-element';
+import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
+
+type State = 'default' | 'moving' | 'tl' | 't' | 'tr' | 'r' | 'br' | 'b' | 'bl' | 'l';
 
 @element('rectangle-editor')
 export class RectangleEditor extends BaseElement {
   @property() shape?: Shape;
 
-  private g: SVGElement | null = null;
-  private go: SVGElement | null = null;
+  private shadowShape?: Shape;
+  private gShadow: SVGElement | null = null;
+  private originPoint?: Point;
+  private dragState?: State;
+  private shapeString = '';
+
+  private overlayUpHandler = () => this.overlayUp();
+  private overlayDownHandler = (e: Event) => this.overlayDown(e as CustomEvent);
+  private overlayTrackHandler = (e: Event) => this.overlayTrack(e as CustomEvent);
+
+  private get svg(): SVGSVGElement {
+    return this.$$('svg') as any as SVGSVGElement;
+  }
 
   render() {
     return html`
@@ -34,7 +48,12 @@ export class RectangleEditor extends BaseElement {
         position: absolute;
         pointer-events: auto;
         color: var(--highlight-blue);
+        display: none;
       }
+      :host(.re-default) #overlay {
+        display: block;
+      }
+
       .hidden {
         display: none;
       }
@@ -110,35 +129,75 @@ export class RectangleEditor extends BaseElement {
     `;
   }
 
-  private get svg(): SVGSVGElement {
-    return this.$$('svg') as any as SVGSVGElement;
-  }
-
   connectedCallback() {
     super.connectedCallback();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.detachListeners();
+  }
+
+  private get state(): State {
+    return this.dragState || 'default';
+  }
+
+  private set state(value: State) {
+    if (value !== this.dragState) {
+      this.classList.remove(`re-${this.dragState}`);
+      this.dragState = value;
+      this.classList.add(`re-${this.dragState}`);
+    }
+  }
+
+  private detachListeners() {
+    const overlay = this.$('overlay');
+    removeListener(overlay, 'up', this.overlayUpHandler);
+    removeListener(overlay, 'down', this.overlayDownHandler);
+    removeListener(overlay, 'track', this.overlayTrackHandler);
+  }
+
+  private attachListeners() {
+    this.detachListeners();
+    const overlay = this.$('overlay');
+    addListener(overlay, 'up', this.overlayUpHandler);
+    addListener(overlay, 'down', this.overlayDownHandler);
+    addListener(overlay, 'track', this.overlayTrackHandler);
   }
 
   updated(changedProperties: PropertyValues) {
     if (changedProperties.has('shape')) {
-      this.redrawShape();
+      this.state = 'default';
+      this.resetShape();
       this.refreshControls();
+      this.attachListeners();
     }
   }
 
-  private redrawShape() {
+  private resetShape() {
     const svg = this.svg;
     while (svg.lastChild) {
       svg.removeChild(svg.lastChild);
     }
+    this.gShadow = null;
     if (this.shape) {
-      this.g = this.drawShape(this.shape);
-      this.go = this.drawShape(this.shape);
-      if (this.g && this.go) {
-        this.go.classList.add('overlay');
+      this.shapeString = JSON.stringify(this.shape);
+      this.shadowShape = JSON.parse(this.shapeString) as Shape;
+      this.redrawShadow();
+    } else {
+      this.shadowShape = undefined;
+    }
+  }
+
+  private redrawShadow() {
+    if (this.gShadow) {
+      this.svg.removeChild(this.gShadow);
+      this.gShadow = null;
+    }
+    if (this.shadowShape) {
+      this.gShadow = this.drawShape(this.shadowShape);
+      if (this.gShadow) {
+        this.gShadow.classList.add('overlay');
       }
     }
   }
@@ -172,6 +231,38 @@ export class RectangleEditor extends BaseElement {
       ostyle.height = `${yp - y}px`;
     } else {
       overlay.classList.add('hidden');
+    }
+  }
+
+  private overlayUp() {
+    if (this.state !== 'default') {
+      this.state = 'default';
+      const shadowString = JSON.stringify(this.shadowShape);
+      if (shadowString !== this.shapeString) {
+        this.fireEvent('update-shape', this.shadowShape);
+        this.shape = JSON.parse(shadowString) as Shape;
+      }
+    }
+  }
+
+  private overlayDown(event: CustomEvent) {
+    if (this.state === 'default') {
+      this.state = 'moving';
+      this.originPoint = [event.detail.x, event.detail.y];
+    }
+  }
+
+  private overlayTrack(event: CustomEvent) {
+    if (this.state === 'moving') {
+      const p: Point = [event.detail.x, event.detail.y];
+      const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
+      if (this.shadowShape) {
+        this.shadowShape.points.forEach((p, i) => {
+          p[0] = this.shape!.points[i][0] + diff[0];
+          p[1] = this.shape!.points[i][1] + diff[1];
+          setTimeout(() => this.redrawShadow());
+        });
+      }
     }
   }
 }
