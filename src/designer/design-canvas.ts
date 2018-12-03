@@ -70,6 +70,14 @@ export class DesignCanvas extends BaseElement {
     }
   }
 
+  deleteShape(shape: Shape) {
+    if (shape && this.shapeMap.has(shape.id)) {
+      const current = this.shapeMap.get(shape.id)!;
+      current.node.parentElement!.removeChild(current.node);
+      this.shapeMap.delete(shape.id);
+    }
+  }
+
   private renderShape(shape: Shape, parent?: SVGElement): SVGElement | null {
     const tool = toolManager.byType(shape.type);
     const node = tool.draw(shape);

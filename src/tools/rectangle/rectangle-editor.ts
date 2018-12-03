@@ -271,6 +271,11 @@ export class RectangleEditor extends BaseElement {
           this.shiftShadowShape([0, meta ? 5 : 1]);
           this.deferredUpdateShape();
           break;
+        case 8:
+        case 46:
+          // delete
+          this.fireEvent('delete-shape', this.shape);
+          break;
       }
     }
   }
