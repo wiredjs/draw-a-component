@@ -43,7 +43,7 @@ export class DesignSection extends BaseElement {
         height: 100%;
       }
     </style>
-    <design-palette .selected="${this.currentTool}" @select="${(e: CustomEvent) => { this.currentTool = e.detail.name; }}"></design-palette>
+    <design-palette .selected="${this.currentTool}" @select="${this.onToolChange}"></design-palette>
     <div class="flex" style="position: relative;">
       <design-canvas .selected="${this.selectedShape ? this.selectedShape.id : null}" id="dc" @select="${this.onSelect}"></design-canvas>
       <design-slate .currentTool="${this.currentTool}" class="${slateClass}" @shape="${this.addShape}"></design-slate>
@@ -54,6 +54,11 @@ export class DesignSection extends BaseElement {
 
   get canvas(): DesignCanvas {
     return this.$('dc') as DesignCanvas;
+  }
+
+  private onToolChange(e: CustomEvent) {
+    this.currentTool = e.detail.name;
+    this.selectedShape = null;
   }
 
   private addShape(e: CustomEvent) {
