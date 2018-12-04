@@ -1,5 +1,6 @@
-import { Sketcher, SketchDelegate } from '../../designer/design-tool';
+import { Sketcher, SketchDelegate, Shape } from '../../designer/design-tool';
 import { Point, isSamePoint, newId } from '../../designer/design-common';
+import { normalizeRect } from '../../utils';
 
 export class RectSketcher implements Sketcher {
   private delegate?: SketchDelegate;
@@ -47,11 +48,13 @@ export class RectSketcher implements Sketcher {
 
   protected addShape() {
     if (this.delegate) {
-      this.delegate.addShape({
+      const shape: Shape = {
         id: newId(),
         type: 'rectangle',
         points: [this.p1!, this.p2!]
-      });
+      };
+      normalizeRect(shape.points);
+      this.delegate.addShape(shape);
     }
   }
 }

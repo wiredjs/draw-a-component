@@ -3,6 +3,7 @@ import { Shape, toolManager } from '../../designer/design-tool';
 import { svgNode, Point } from '../../designer/design-common';
 import { PropertyValues } from '@polymer/lit-element';
 import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
+import { normalizeRect } from '../../utils';
 
 type State = 'default' | 'moving' | 'tl' | 't' | 'tr' | 'r' | 'br' | 'b' | 'bl' | 'l';
 
@@ -18,8 +19,8 @@ export class RectangleEditor extends BaseElement {
   private updateShapePending = false;
 
   private overlayUpHandler = this.overlayUp.bind(this);
-  private overlayDownHandler = this.overlayDown.bind(this);
-  private overlayTrackHandler = this.overlayTrack.bind(this);
+  private overlayDownHandler = (e: Event) => this.overlayDown(e as CustomEvent);
+  private overlayTrackHandler = (e: Event) => this.overlayTrack(e as CustomEvent);
   private keyboardListener = this.onKeyDown.bind(this);
 
   private get svg(): SVGSVGElement {
@@ -120,14 +121,14 @@ export class RectangleEditor extends BaseElement {
     <svg></svg>
     <div id="overlay">
       <div id="pCenter" class="round"></div>
-      <div id="pTopLeft" class="square"></div>
-      <div id="pTopRight" class="square"></div>
-      <div id="pBottomRight" class="square"></div>
-      <div id="pBottomLeft" class="square"></div>
-      <div id="pTop" class="square"></div>
-      <div id="pBottom" class="square"></div>
-      <div id="pLeft" class="square"></div>
-      <div id="pRight" class="square"></div>
+      <div id="pTopLeft" data-state="tl" class="square"></div>
+      <div id="pTopRight"  data-state="tr" class="square"></div>
+      <div id="pBottomRight" data-state="br" class="square"></div>
+      <div id="pBottomLeft" data-state="bl" class="square"></div>
+      <div id="pTop" data-state="t" class="square"></div>
+      <div id="pBottom" data-state="b" class="square"></div>
+      <div id="pLeft" data-state="l" class="square"></div>
+      <div id="pRight" data-state="r" class="square"></div>
     </div>
     `;
   }
@@ -290,16 +291,77 @@ export class RectangleEditor extends BaseElement {
 
   private overlayDown(event: CustomEvent) {
     if (this.state === 'default') {
-      this.state = 'moving';
+      const targetState = (event.target as HTMLElement).dataset.state;
+      if (targetState) {
+        this.state = targetState as State;
+      } else {
+        this.state = 'moving';
+      }
       this.originPoint = [event.detail.x, event.detail.y];
     }
   }
 
   private overlayTrack(event: CustomEvent) {
-    if (this.state === 'moving') {
-      const p: Point = [event.detail.x, event.detail.y];
-      const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-      this.shiftShadowShape(diff);
+    const p: Point = [event.detail.x, event.detail.y];
+    switch (this.state) {
+      case 't': {
+        const dy = p[1] - this.originPoint![1];
+        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + dy;
+        this.microTaskRedraw();
+        break;
+      }
+      case 'b': {
+        const dy = p[1] - this.originPoint![1];
+        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + dy;
+        this.microTaskRedraw();
+        break;
+      }
+      case 'r': {
+        const dx = p[0] - this.originPoint![0];
+        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + dx;
+        this.microTaskRedraw();
+        break;
+      }
+      case 'l': {
+        const dx = p[0] - this.originPoint![0];
+        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + dx;
+        this.microTaskRedraw();
+        break;
+      }
+      case 'tl': {
+        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
+        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + diff[0];
+        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + diff[1];
+        this.microTaskRedraw();
+        break;
+      }
+      case 'tr': {
+        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
+        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + diff[0];
+        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + diff[1];
+        this.microTaskRedraw();
+        break;
+      }
+      case 'bl': {
+        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
+        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + diff[0];
+        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + diff[1];
+        this.microTaskRedraw();
+        break;
+      }
+      case 'br': {
+        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
+        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + diff[0];
+        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + diff[1];
+        this.microTaskRedraw();
+        break;
+      }
+      case 'moving':
+        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
+        this.shiftShadowShape(diff);
+        break;
+      default:
+        break;
     }
   }
 
@@ -308,12 +370,17 @@ export class RectangleEditor extends BaseElement {
       this.shadowShape.points.forEach((p, i) => {
         p[0] = this.shape!.points[i][0] + diff[0];
         p[1] = this.shape!.points[i][1] + diff[1];
-        Promise.resolve().then(() => this.redrawShadow());
+        this.microTaskRedraw();
       });
     }
   }
 
+  private microTaskRedraw() {
+    Promise.resolve().then(() => this.redrawShadow());
+  }
+
   private updateShape() {
+    normalizeRect(this.shadowShape!.points);
     const shadowString = JSON.stringify(this.shadowShape);
     if (shadowString !== this.shapeString) {
       this.fireEvent('update-shape', this.shadowShape);
