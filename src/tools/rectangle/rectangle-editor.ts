@@ -1,33 +1,12 @@
-import { BaseElement, html, element, property } from '../../base-element.js';
-import { Shape, toolManager } from '../../designer/design-tool';
-import { svgNode, Point } from '../../designer/design-common';
-import { PropertyValues } from '@polymer/lit-element';
-import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
+import { html, element } from '../../base-element.js';
+import { ShapeEditor } from '../editor.js';
+import { Point } from '../../designer/design-common';
 import { normalizeRect } from '../../utils';
-import { UndoableOp } from 'src/designer/ops.js';
 
 type State = 'default' | 'moving' | 'tl' | 't' | 'tr' | 'r' | 'br' | 'b' | 'bl' | 'l';
 
 @element('rectangle-editor')
-export class RectangleEditor extends BaseElement {
-  @property() shape?: Shape;
-
-  private shadowShape?: Shape;
-  private gShadow: SVGElement | null = null;
-  private originPoint?: Point;
-  private dragState?: State;
-  private shapeString = '';
-  private updateShapePending = false;
-
-  private overlayUpHandler = this.overlayUp.bind(this);
-  private overlayDownHandler = (e: Event) => this.overlayDown(e as CustomEvent);
-  private overlayTrackHandler = (e: Event) => this.overlayTrack(e as CustomEvent);
-  private keyboardListener = this.onKeyDown.bind(this);
-
-  private get svg(): SVGSVGElement {
-    return this.$$('svg') as any as SVGSVGElement;
-  }
-
+export class RectangleEditor extends ShapeEditor {
   render() {
     return html`
     <style>
@@ -55,7 +34,7 @@ export class RectangleEditor extends BaseElement {
         color: var(--highlight-blue);
         display: none;
       }
-      :host(.re-default) #overlay {
+      :host(.editor-default) #overlay {
         display: block;
       }
 
@@ -134,107 +113,7 @@ export class RectangleEditor extends BaseElement {
     `;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    if (this.shape) {
-      this.state = 'default';
-      this.focus();
-    }
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.detachListeners();
-  }
-
-  firstUpdated() {
-    this.tabIndex = 0;
-  }
-
-  private get state(): State {
-    return this.dragState || 'default';
-  }
-
-  private set state(value: State) {
-    if (value !== this.dragState) {
-      this.classList.remove(`re-${this.dragState}`);
-      this.dragState = value;
-      this.classList.add(`re-${this.dragState}`);
-    }
-  }
-
-  private detachListeners() {
-    const overlay = this.$('overlay');
-    this.removeEventListener('keydown', this.keyboardListener);
-    removeListener(overlay, 'up', this.overlayUpHandler);
-    removeListener(overlay, 'down', this.overlayDownHandler);
-    removeListener(overlay, 'track', this.overlayTrackHandler);
-  }
-
-  private attachListeners() {
-    this.detachListeners();
-    const overlay = this.$('overlay');
-    this.addEventListener('keydown', this.keyboardListener);
-    addListener(overlay, 'up', this.overlayUpHandler);
-    addListener(overlay, 'down', this.overlayDownHandler);
-    addListener(overlay, 'track', this.overlayTrackHandler);
-  }
-
-  updated(changedProperties: PropertyValues) {
-    if (changedProperties.has('shape')) {
-      this.state = 'default';
-      this.resetShape();
-      this.refreshControls();
-      if (this.shape) {
-        this.attachListeners();
-        this.focus();
-      } else {
-        this.detachListeners();
-      }
-    }
-  }
-
-  private resetShape() {
-    const svg = this.svg;
-    while (svg.lastChild) {
-      svg.removeChild(svg.lastChild);
-    }
-    this.gShadow = null;
-    if (this.shape) {
-      this.shapeString = JSON.stringify(this.shape);
-      this.shadowShape = JSON.parse(this.shapeString) as Shape;
-      this.redrawShadow();
-    } else {
-      this.shadowShape = undefined;
-    }
-  }
-
-  private redrawShadow() {
-    if (this.gShadow) {
-      this.svg.removeChild(this.gShadow);
-      this.gShadow = null;
-    }
-    if (this.shadowShape) {
-      this.gShadow = this.drawShape(this.shadowShape);
-      if (this.gShadow) {
-        this.gShadow.classList.add('overlay');
-      }
-    }
-  }
-
-  private drawShape(shape: Shape): SVGElement | null {
-    const tool = toolManager.byType(shape.type);
-    const node = tool.draw(shape);
-    if (node) {
-      const g = svgNode('g', { id: `g-${shape.id}` });
-      g.appendChild(node);
-      this.svg.appendChild(g);
-      return g;
-    }
-    return null;
-  }
-
-  private refreshControls() {
+  protected refreshControls(): void {
     const overlay = this.$('overlay');
     if (this.shape) {
       overlay.classList.remove('hidden');
@@ -254,59 +133,19 @@ export class RectangleEditor extends BaseElement {
     }
   }
 
-  private onKeyDown(event: KeyboardEvent) {
-    if (this.shadowShape && this.state === 'default') {
-      const meta = event.shiftKey || event.metaKey || event.ctrlKey || event.altKey;
-      switch (event.keyCode) {
-        case 37:
-          this.shiftShadowShape([meta ? -5 : -1, 0]);
-          this.deferredUpdateShape();
-          break;
-        case 38:
-          this.shiftShadowShape([0, meta ? -5 : -1]);
-          this.deferredUpdateShape();
-          break;
-        case 39:
-          this.shiftShadowShape([meta ? 5 : 1, 0]);
-          this.deferredUpdateShape();
-          break;
-        case 40:
-          this.shiftShadowShape([0, meta ? 5 : 1]);
-          this.deferredUpdateShape();
-          break;
-        case 8:
-        case 46:
-          // delete
-          const ops: UndoableOp = {
-            do: { type: 'delete', shape: this.shape! },
-            undo: { type: 'add', shape: this.shape! }
-          };
-          this.fireEvent('op', ops);
-          break;
-      }
-    }
-  }
-
-  private overlayUp() {
-    if (this.state !== 'default') {
-      this.state = 'default';
-      this.updateShape();
-    }
-  }
-
-  private overlayDown(event: CustomEvent) {
+  protected overlayDown(event: CustomEvent) {
     if (this.state === 'default') {
       const targetState = (event.target as HTMLElement).dataset.state;
       if (targetState) {
         this.state = targetState as State;
+        this.originPoint = [event.detail.x, event.detail.y];
       } else {
-        this.state = 'moving';
+        super.overlayDown(event);
       }
-      this.originPoint = [event.detail.x, event.detail.y];
     }
   }
 
-  private overlayTrack(event: CustomEvent) {
+  protected overlayTrack(event: CustomEvent) {
     const p: Point = [event.detail.x, event.detail.y];
     switch (this.state) {
       case 't': {
@@ -361,49 +200,13 @@ export class RectangleEditor extends BaseElement {
         this.microTaskRedraw();
         break;
       }
-      case 'moving':
-        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-        this.shiftShadowShape(diff);
-        break;
       default:
+        super.overlayTrack(event);
         break;
     }
   }
 
-  private shiftShadowShape(diff: Point) {
-    if (this.shadowShape) {
-      this.shadowShape.points.forEach((p, i) => {
-        p[0] = this.shape!.points[i][0] + diff[0];
-        p[1] = this.shape!.points[i][1] + diff[1];
-        this.microTaskRedraw();
-      });
-    }
-  }
-
-  private microTaskRedraw() {
-    Promise.resolve().then(() => this.redrawShadow());
-  }
-
-  private updateShape() {
+  protected normalizeShape() {
     normalizeRect(this.shadowShape!.points);
-    const shadowString = JSON.stringify(this.shadowShape);
-    if (shadowString !== this.shapeString) {
-      const ops: UndoableOp = {
-        do: { type: 'update', shape: JSON.parse(shadowString) as Shape },
-        undo: { type: 'update', shape: JSON.parse(JSON.stringify(this.shape)) as Shape }
-      };
-      this.fireEvent('op', ops);
-      this.shape = JSON.parse(shadowString) as Shape;
-    }
-  }
-
-  private deferredUpdateShape() {
-    if (!this.updateShapePending) {
-      this.updateShapePending = true;
-      setTimeout(() => {
-        this.updateShapePending = false;
-        this.updateShape();
-      }, 200);
-    }
   }
 }
