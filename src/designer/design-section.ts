@@ -6,6 +6,7 @@ import { PropertyValues } from '@polymer/lit-element';
 import './design-palette.js';
 import './design-slate';
 import './design-canvas';
+import { UndoableOp, Op } from './ops.js';
 
 @element('design-section')
 export class DesignSection extends BaseElement {
@@ -46,8 +47,8 @@ export class DesignSection extends BaseElement {
     <design-palette .selected="${this.currentTool}" @select="${this.onToolChange}"></design-palette>
     <div class="flex" style="position: relative;">
       <design-canvas .selected="${this.selectedShape ? this.selectedShape.id : null}" id="dc" @select="${this.onSelect}"></design-canvas>
-      <design-slate .currentTool="${this.currentTool}" class="${slateClass}" @shape="${this.addShape}"></design-slate>
-      <div id="editorPanel" class="hidden" @update-shape="${this.updateShape}" @delete-shape="${this.deleteShape}"></div>
+      <design-slate .currentTool="${this.currentTool}" class="${slateClass}" @op="${this.handleOp}"></design-slate>
+      <div id="editorPanel" class="hidden" @op="${this.handleOp}"></div>
     </div>
     `;
   }
@@ -61,25 +62,27 @@ export class DesignSection extends BaseElement {
     this.selectedShape = null;
   }
 
-  private addShape(e: CustomEvent) {
-    const shape = e.detail as Shape;
-    if (shape) {
-      this.canvas.addShape(shape);
+  private handleOp(e: CustomEvent) {
+    const uop = e.detail as UndoableOp;
+    if (uop) {
+      this.doOp(uop.do);
     }
   }
 
-  private updateShape(e: CustomEvent) {
-    const shape = e.detail as Shape;
-    if (shape) {
-      this.canvas.updateShape(shape);
-    }
-  }
-
-  private deleteShape(e: CustomEvent) {
-    const shape = e.detail as Shape;
-    if (shape) {
-      this.selectedShape = null;
-      this.canvas.deleteShape(shape);
+  private doOp(op: Op) {
+    switch (op.type) {
+      case 'add':
+        this.canvas.addShape(op.shape);
+        break;
+      case 'delete':
+        this.selectedShape = null;
+        this.canvas.deleteShape(op.shape);
+        break;
+      case 'update':
+        this.canvas.updateShape(op.shape);
+        break;
+      default:
+        break;
     }
   }
 

@@ -4,6 +4,7 @@ import { svgNode, Point } from '../../designer/design-common';
 import { PropertyValues } from '@polymer/lit-element';
 import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
 import { normalizeRect } from '../../utils';
+import { UndoableOp } from 'src/designer/ops.js';
 
 type State = 'default' | 'moving' | 'tl' | 't' | 'tr' | 'r' | 'br' | 'b' | 'bl' | 'l';
 
@@ -276,7 +277,11 @@ export class RectangleEditor extends BaseElement {
         case 8:
         case 46:
           // delete
-          this.fireEvent('delete-shape', this.shape);
+          const ops: UndoableOp = {
+            do: { type: 'delete', shape: this.shape! },
+            undo: { type: 'add', shape: this.shape! }
+          };
+          this.fireEvent('op', ops);
           break;
       }
     }
@@ -383,7 +388,11 @@ export class RectangleEditor extends BaseElement {
     normalizeRect(this.shadowShape!.points);
     const shadowString = JSON.stringify(this.shadowShape);
     if (shadowString !== this.shapeString) {
-      this.fireEvent('update-shape', this.shadowShape);
+      const ops: UndoableOp = {
+        do: { type: 'update', shape: JSON.parse(shadowString) as Shape },
+        undo: { type: 'update', shape: JSON.parse(JSON.stringify(this.shape)) as Shape }
+      };
+      this.fireEvent('op', ops);
       this.shape = JSON.parse(shadowString) as Shape;
     }
   }

@@ -2,6 +2,7 @@ import { BaseElement, html, element, property } from '../base-element.js';
 import { debounce } from '../utils.js';
 import { Shape, SketchDelegate, Sketcher, toolManager, ToolType } from './design-tool.js';
 import { Point } from './design-common.js';
+import { UndoableOp } from './ops.js';
 
 @element('design-slate')
 export class DesignSlate extends BaseElement implements SketchDelegate {
@@ -138,6 +139,10 @@ export class DesignSlate extends BaseElement implements SketchDelegate {
   }
 
   addShape(shape: Shape) {
-    this.fireEvent('shape', shape);
+    const ops: UndoableOp = {
+      do: { type: 'add', shape },
+      undo: { type: 'delete', shape }
+    };
+    this.fireEvent('op', ops);
   }
 }
