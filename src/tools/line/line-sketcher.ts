@@ -1,5 +1,6 @@
-import { Sketcher, SketchDelegate } from '../../designer/design-tool';
+import { Sketcher, SketchDelegate, Shape } from '../../designer/design-tool';
 import { Point, isSamePoint, newId } from '../../designer/design-common';
+import { normalizeLine } from '../../utils';
 
 export class LineSketcher implements Sketcher {
   private delegate?: SketchDelegate;
@@ -49,11 +50,13 @@ export class LineSketcher implements Sketcher {
     if (this.p1 && this.p2) {
       if (!isSamePoint(this.p1, this.p2)) {
         if (this.delegate) {
-          this.delegate.addShape({
+          const shape: Shape = {
             id: newId(),
             type: 'line',
             points: [this.p1, this.p2]
-          });
+          };
+          normalizeLine(shape.points);
+          this.delegate.addShape(shape);
         }
       }
     }

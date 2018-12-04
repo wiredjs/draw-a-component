@@ -1,9 +1,57 @@
-import { BaseElement, property, TemplateResult } from '../base-element.js';
+import { BaseElement, property, TemplateResult, html, PropertyValues } from '../base-element.js';
 import { Shape, toolManager } from '../designer/design-tool';
 import { Point, svgNode } from '../designer/design-common.js';
 import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
 import { UndoableOp } from '../designer/ops.js';
-import { PropertyValues } from '@polymer/lit-element';
+
+export const baseStyles: TemplateResult = html`
+<style>
+  :host {
+    display: block;
+    outline: none;
+    pointer-events: none;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+  g {
+    fill: transparent;
+    stroke: #000;
+  }
+  g.overlay {
+    stroke: var(--highlight-blue);
+  }
+  #overlay {
+    position: absolute;
+    pointer-events: auto;
+    color: var(--highlight-blue);
+    display: none;
+  }
+  :host(.editor-default) #overlay {
+    display: block;
+  }
+  .hidden {
+    display: none;
+  }
+  .round {
+    position: absolute;
+    background: currentColor;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .square {
+    position: absolute;
+    background: white;
+    width: 5px;
+    height: 5px;
+    border: 1px solid;
+  }
+</style>
+`;
 
 export abstract class ShapeEditor extends BaseElement {
   @property() shape?: Shape;
@@ -220,7 +268,26 @@ export abstract class ShapeEditor extends BaseElement {
     }
   }
 
-  protected abstract refreshControls(): void;
+  protected refreshControls(): void {
+    const overlay = this.$('overlay');
+    if (this.shape) {
+      overlay.classList.remove('hidden');
+      const p1 = this.shape.points[0];
+      const p2 = this.shape.points[1];
+      const x = Math.min(p1[0], p2[0]);
+      const y = Math.min(p1[1], p2[1]);
+      const xp = Math.max(p1[0], p2[0]);
+      const yp = Math.max(p1[1], p2[1]);
+      const ostyle = overlay.style;
+      ostyle.left = `${x}px`;
+      ostyle.top = `${y}px`;
+      ostyle.width = `${xp - x}px`;
+      ostyle.height = `${yp - y}px`;
+    } else {
+      overlay.classList.add('hidden');
+    }
+  }
+
   protected abstract normalizeShape(): void;
   abstract render(): TemplateResult;
 }
