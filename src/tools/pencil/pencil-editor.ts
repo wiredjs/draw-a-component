@@ -6,6 +6,9 @@ type State = 'default' | 'moving' | 'tl' | 't' | 'tr' | 'r' | 'br' | 'b' | 'bl' 
 
 @element('pencil-editor')
 export class PencilEditor extends ShapeEditor {
+  private min: Point = [0, 0];
+  private max: Point = [0, 0];
+
   render() {
     return html`
     ${baseStyles}
@@ -81,6 +84,8 @@ export class PencilEditor extends ShapeEditor {
       ostyle.top = `${min[1]}px`;
       ostyle.width = `${max[0] - min[0]}px`;
       ostyle.height = `${max[1] - min[1]}px`;
+      this.min = min;
+      this.max = max;
     } else {
       overlay.classList.add('hidden');
     }
@@ -105,6 +110,8 @@ export class PencilEditor extends ShapeEditor {
         break;
       }
       case 'b': {
+        const dy = (p[1] - this.originPoint![1]) / ((this.max[1] - this.min[1]) || 1);
+        console.log(dy);
         break;
       }
       case 'r': {
