@@ -77,20 +77,40 @@ export class LineEditor extends ShapeEditor {
     }
   }
 
+  private adjustMeta(d: Point, p0: Point): void {
+    const angle = Math.abs((180 / Math.PI) * Math.atan((d[1] - p0[1]) / (d[0] - p0[0])));
+    if (angle < 30) {
+      d[1] = p0[1];
+    } else if (angle > 60) {
+      d[0] = p0[0];
+    } else {
+      const dx = d[0] - p0[0];
+      const dy = d[1] - p0[1];
+      const sign = (dx * dy) ? ((dx * dy) / Math.abs(dx * dy)) : 1;
+      d[1] = p0[1] + sign * dx;
+    }
+  }
+
   protected overlayTrack(event: CustomEvent) {
     const p: Point = [event.detail.x, event.detail.y];
+    const metaKey = !!(event.detail.sourceEvent && event.detail.sourceEvent.shiftKey);
+    const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
     switch (this.state) {
       case 'r': {
-        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + diff[0];
-        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + diff[1];
+        const d: Point = [this.shape!.points[1][0] + diff[0], this.shape!.points[1][1] + diff[1]];
+        if (metaKey) {
+          this.adjustMeta(d, this.shape!.points[0]);
+        }
+        this.shadowShape!.points[1] = d;
         this.microTaskRedraw();
         break;
       }
       case 'l': {
-        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + diff[0];
-        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + diff[1];
+        const d: Point = [this.shape!.points[0][0] + diff[0], this.shape!.points[0][1] + diff[1]];
+        if (metaKey) {
+          this.adjustMeta(d, this.shape!.points[1]);
+        }
+        this.shadowShape!.points[0] = d;
         this.microTaskRedraw();
         break;
       }
