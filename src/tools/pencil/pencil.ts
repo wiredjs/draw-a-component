@@ -1,9 +1,12 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { PencilSketcher } from './pencil-sketcher';
 import { svgNode } from '../../designer/design-common';
+import { PencilEditor } from './pencil-editor';
+import './pencil-editor';
 
 export class Pencil implements Tool {
   private sketcher?: PencilSketcher;
+  private _editor?: PencilEditor;
 
   get type(): ToolType {
     return 'pencil';
@@ -36,7 +39,11 @@ export class Pencil implements Tool {
     return svgNode('path', { d });
   }
 
-  editor(_shape: Shape): HTMLElement | null {
-    return null;
+  editor(shape: Shape): HTMLElement | null {
+    if (!this._editor) {
+      this._editor = new PencilEditor();
+    }
+    this._editor.shape = shape;
+    return this._editor;
   }
 }
