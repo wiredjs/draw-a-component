@@ -1,6 +1,6 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { EllipseSketcher } from './ellipse-sketcher';
-import { svgNode } from '../../designer/design-common';
+import { svgNode } from '../../utils';
 import { RectangleEditor } from '../rectangle/rectangle-editor';
 import '../rectangle/rectangle-editor';
 

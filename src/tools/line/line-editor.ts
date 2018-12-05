@@ -1,7 +1,6 @@
 import { html, element } from '../../base-element.js';
 import { ShapeEditor, baseStyles } from '../editor.js';
-import { normalizeLine } from '../../utils';
-import { Point } from '../../designer/design-common';
+import { Point, normalizeLine } from '../../geometry';
 
 type State = 'default' | 'moving' | 'r' | 'l';
 

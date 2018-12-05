@@ -1,6 +1,6 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { PencilSketcher } from './pencil-sketcher';
-import { svgNode } from '../../designer/design-common';
+import { svgNode } from '../../utils';
 import { PencilEditor } from './pencil-editor';
 import './pencil-editor';
 

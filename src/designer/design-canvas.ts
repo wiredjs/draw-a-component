@@ -1,6 +1,6 @@
 import { BaseElement, html, element } from '../base-element.js';
 import { Shape, toolManager } from './design-tool.js';
-import { svgNode } from './design-common.js';
+import { svgNode } from '../utils';
 
 interface ShapeItem {
   shape: Shape;

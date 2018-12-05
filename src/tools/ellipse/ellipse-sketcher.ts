@@ -1,5 +1,6 @@
 import { Sketcher, SketchDelegate } from '../../designer/design-tool';
-import { Point, isSamePoint, newId } from '../../designer/design-common';
+import { Point, isSamePoint } from '../../geometry';
+import { newId } from '../../utils';
 
 export class EllipseSketcher implements Sketcher {
   private delegate?: SketchDelegate;

@@ -1,5 +1,6 @@
 import { Sketcher, SketchDelegate } from '../../designer/design-tool';
-import { Point, newId } from '../../designer/design-common';
+import { newId } from '../../utils';
+import { Point } from '../../geometry';
 
 export class PencilSketcher implements Sketcher {
   private delegate?: SketchDelegate;

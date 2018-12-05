@@ -1,4 +1,4 @@
-import { Point } from './design-common.js';
+import { Point } from '../geometry';
 import { Selector } from '../tools/selector/selector.js';
 import { Pencil } from '../tools/pencil/pencil.js';
 import { Rectangle } from '../tools/rectangle/rectangle.js';

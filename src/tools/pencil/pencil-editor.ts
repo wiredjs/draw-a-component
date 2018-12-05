@@ -1,6 +1,6 @@
 import { html, element } from '../../base-element.js';
 import { ShapeEditor, baseStyles } from '../editor.js';
-import { Point } from '../../designer/design-common';
+import { Point } from '../../geometry';
 
 type State = 'default' | 'moving' | 'tl' | 't' | 'tr' | 'r' | 'br' | 'b' | 'bl' | 'l';
 

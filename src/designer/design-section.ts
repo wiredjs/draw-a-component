@@ -3,10 +3,10 @@ import { flexStyles } from '../flex-styles.js';
 import { Shape, ToolType, toolManager } from './design-tool.js';
 import { DesignCanvas } from './design-canvas';
 import { PropertyValues } from '@polymer/lit-element';
+import { UndoableOp, Op } from '../ops.js';
 import './design-palette.js';
 import './design-slate';
 import './design-canvas';
-import { UndoableOp, Op } from './ops.js';
 
 @element('design-section')
 export class DesignSection extends BaseElement {

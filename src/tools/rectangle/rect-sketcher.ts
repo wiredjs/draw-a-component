@@ -1,6 +1,6 @@
 import { Sketcher, SketchDelegate, Shape } from '../../designer/design-tool';
-import { Point, isSamePoint, newId } from '../../designer/design-common';
-import { normalizeRect } from '../../utils';
+import { newId } from '../../utils';
+import { Point, normalizeRect, isSamePoint } from '../../geometry';
 
 export class RectSketcher implements Sketcher {
   private delegate?: SketchDelegate;
