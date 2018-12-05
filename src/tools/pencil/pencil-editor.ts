@@ -1,6 +1,6 @@
 import { html, element } from '../../base-element.js';
 import { ShapeEditor, baseStyles } from '../editor.js';
-import { Point } from '../../geometry';
+import { Point, scale } from '../../geometry';
 
 type State = 'default' | 'moving' | 'tl' | 't' | 'tr' | 'r' | 'br' | 'b' | 'bl' | 'l';
 
@@ -105,31 +105,47 @@ export class PencilEditor extends ShapeEditor {
 
   protected overlayTrack(event: CustomEvent) {
     const p: Point = [event.detail.x, event.detail.y];
+    const dx = (p[0] - this.originPoint![0]) / ((this.max[0] - this.min[0]) || 1);
+    const dy = (p[1] - this.originPoint![1]) / ((this.max[1] - this.min[1]) || 1);
     switch (this.state) {
       case 't': {
+        this.shadowShape!.points = scale(this.shape!.points, [1, 1 - dy], this.max);
+        this.microTaskRedraw();
         break;
       }
       case 'b': {
-        const dy = (p[1] - this.originPoint![1]) / ((this.max[1] - this.min[1]) || 1);
-        console.log(dy);
+        this.shadowShape!.points = scale(this.shape!.points, [1, 1 + dy], this.min);
+        this.microTaskRedraw();
         break;
       }
       case 'r': {
+        this.shadowShape!.points = scale(this.shape!.points, [1 + dx, 1], this.min);
+        this.microTaskRedraw();
         break;
       }
       case 'l': {
+        this.shadowShape!.points = scale(this.shape!.points, [1 - dx, 1], this.max);
+        this.microTaskRedraw();
         break;
       }
       case 'tl': {
+        this.shadowShape!.points = scale(this.shape!.points, [1 - dx, 1 - dy], this.max);
+        this.microTaskRedraw();
         break;
       }
       case 'tr': {
+        this.shadowShape!.points = scale(this.shape!.points, [1 + dx, 1 - dy], [this.min[0], this.max[1]]);
+        this.microTaskRedraw();
         break;
       }
       case 'bl': {
+        this.shadowShape!.points = scale(this.shape!.points, [1 - dx, 1 + dy], [this.max[0], this.min[1]]);
+        this.microTaskRedraw();
         break;
       }
       case 'br': {
+        this.shadowShape!.points = scale(this.shape!.points, [1 + dx, 1 + dy], this.min);
+        this.microTaskRedraw();
         break;
       }
       default:

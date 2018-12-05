@@ -26,3 +26,9 @@ export function normalizeLine(points: Point[]): void {
     }
   }
 }
+
+export function scale(points: Point[], scale: Point, origin: Point = [0, 0]): Point[] {
+  return points.map((p) => {
+    return [(p[0] - origin[0]) * scale[0] + origin[0], (p[1] - origin[1]) * scale[1] + origin[1]] as Point;
+  });
+}

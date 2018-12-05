@@ -247,8 +247,8 @@ export abstract class ShapeEditor extends BaseElement {
       this.shadowShape.points.forEach((p, i) => {
         p[0] = this.shape!.points[i][0] + diff[0];
         p[1] = this.shape!.points[i][1] + diff[1];
-        this.microTaskRedraw();
       });
+      this.microTaskRedraw();
     }
   }
 
