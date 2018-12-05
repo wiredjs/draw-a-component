@@ -80,58 +80,73 @@ export class RectangleEditor extends ShapeEditor {
     }
   }
 
+  private adjustMeta(d: Point, p0: Point): void {
+    const dx = d[0] - p0[0];
+    const dy = d[1] - p0[1];
+    const sign = (dx * dy) ? ((dx * dy) / Math.abs(dx * dy)) : 1;
+    d[1] = p0[1] + sign * dx;
+  }
+
   protected overlayTrack(event: CustomEvent) {
     const p: Point = [event.detail.x, event.detail.y];
+    const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
+    const metaKey = !!(event.detail.sourceEvent && event.detail.sourceEvent.shiftKey);
     switch (this.state) {
       case 't': {
-        const dy = p[1] - this.originPoint![1];
-        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + dy;
+        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + diff[1];
         this.microTaskRedraw();
         break;
       }
       case 'b': {
-        const dy = p[1] - this.originPoint![1];
-        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + dy;
+        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + diff[1];
         this.microTaskRedraw();
         break;
       }
       case 'r': {
-        const dx = p[0] - this.originPoint![0];
-        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + dx;
+        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + diff[0];
         this.microTaskRedraw();
         break;
       }
       case 'l': {
-        const dx = p[0] - this.originPoint![0];
-        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + dx;
+        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + diff[0];
         this.microTaskRedraw();
         break;
       }
       case 'tl': {
-        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + diff[0];
-        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + diff[1];
+        const d: Point = [this.shape!.points[0][0] + diff[0], this.shape!.points[0][1] + diff[1]];
+        if (metaKey) {
+          this.adjustMeta(d, this.shadowShape!.points[1]);
+        }
+        this.shadowShape!.points[0] = d;
         this.microTaskRedraw();
         break;
       }
       case 'tr': {
-        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + diff[0];
-        this.shadowShape!.points[0][1] = this.shape!.points[0][1] + diff[1];
+        const d: Point = [this.shape!.points[1][0] + diff[0], this.shape!.points[0][1] + diff[1]];
+        if (metaKey) {
+          this.adjustMeta(d, [this.shadowShape!.points[0][0], this.shadowShape!.points[1][1]]);
+        }
+        this.shadowShape!.points[1][0] = d[0];
+        this.shadowShape!.points[0][1] = d[1];
         this.microTaskRedraw();
         break;
       }
       case 'bl': {
-        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-        this.shadowShape!.points[0][0] = this.shape!.points[0][0] + diff[0];
-        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + diff[1];
+        const d: Point = [this.shape!.points[0][0] + diff[0], this.shape!.points[1][1] + diff[1]];
+        if (metaKey) {
+          this.adjustMeta(d, [this.shadowShape!.points[1][0], this.shadowShape!.points[0][1]]);
+        }
+        this.shadowShape!.points[0][0] = d[0];
+        this.shadowShape!.points[1][1] = d[1];
         this.microTaskRedraw();
         break;
       }
       case 'br': {
-        const diff: Point = [p[0] - this.originPoint![0], p[1] - this.originPoint![1]];
-        this.shadowShape!.points[1][0] = this.shape!.points[1][0] + diff[0];
-        this.shadowShape!.points[1][1] = this.shape!.points[1][1] + diff[1];
+        const d: Point = [this.shape!.points[1][0] + diff[0], this.shape!.points[1][1] + diff[1]];
+        if (metaKey) {
+          this.adjustMeta(d, this.shadowShape!.points[0]);
+        }
+        this.shadowShape!.points[1] = d;
         this.microTaskRedraw();
         break;
       }
