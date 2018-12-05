@@ -1,9 +1,12 @@
 import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
 import { EllipseSketcher } from './ellipse-sketcher';
 import { svgNode } from '../../designer/design-common';
+import { RectangleEditor } from '../rectangle/rectangle-editor';
+import '../rectangle/rectangle-editor';
 
 export class Ellipse implements Tool {
   private sketcher?: EllipseSketcher;
+  private _editor?: RectangleEditor;
 
   get type(): ToolType {
     return 'ellipse';
@@ -35,7 +38,11 @@ export class Ellipse implements Tool {
     return svgNode('ellipse', { cx, cy, rx, ry });
   }
 
-  editor(_shape: Shape): HTMLElement | null {
-    return null;
+  editor(shape: Shape): HTMLElement | null {
+    if (!this._editor) {
+      this._editor = new RectangleEditor();
+    }
+    this._editor.shape = shape;
+    return this._editor;
   }
 }
