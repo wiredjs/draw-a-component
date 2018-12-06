@@ -65,24 +65,30 @@ export class DesignSection extends BaseElement {
   private handleOp(e: CustomEvent) {
     const uop = e.detail as UndoableOp;
     if (uop) {
-      this.doOp(uop.do);
+      this.doOp(uop.do, true);
     }
   }
 
-  private doOp(op: Op) {
+  doOp(op: Op, skipSelection?: boolean) {
+    let s: Shape | null = op.shape;
     switch (op.type) {
       case 'add':
-        this.canvas.addShape(op.shape);
+        this.canvas.addShape(s);
         break;
       case 'delete':
         this.selectedShape = null;
-        this.canvas.deleteShape(op.shape);
+        this.canvas.deleteShape(s);
+        s = null;
         break;
       case 'update':
-        this.canvas.updateShape(op.shape);
+        this.canvas.updateShape(s);
         break;
       default:
+        s = null;
         break;
+    }
+    if (s && (!skipSelection)) {
+      this.selectedShape = s;
     }
   }
 
