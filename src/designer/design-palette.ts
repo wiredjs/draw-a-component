@@ -1,7 +1,8 @@
 import { BaseElement, html, element } from '../base-element.js';
 import { property } from '@polymer/lit-element';
 import { repeat } from 'lit-html/directives/repeat';
-import { Tool, toolManager } from './design-tool.js';
+import { toolManager } from './design-tool.js';
+import { Tool } from './designer-common.js';
 import '../components/dac-icon.js';
 
 @element('design-palette')

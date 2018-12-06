@@ -2,11 +2,11 @@ import { BaseElement, html, element, property } from './base-element.js';
 import { flexStyles } from './flex-styles.js';
 import { UndoableOp, Op } from './ops.js';
 import { UndoRedoElement } from './components/undo-redo.js';
-import { DesignSection } from './designer/design-section';
+import { DesignerView } from './designer/designer-view';
 import './components/dac-tab-bar';
 import './components/dac-tab';
 import './components/dac-icon';
-import './designer/design-section';
+import './designer/designer-view';
 import './components/undo-redo.js';
 
 @element('main-app')
@@ -79,7 +79,7 @@ export class MainApp extends BaseElement {
       </dac-tab-bar>
     </div>
     <main class="flex horizontal layout">
-      <design-section class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></design-section>
+      <designer-view class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></designer-view>
       <div class="flex" style="${this.selectedTab === 'preview' ? '' : 'display: none;'}">
         <p>Preview goes here</p>
       </div>
@@ -92,8 +92,8 @@ export class MainApp extends BaseElement {
     return this.$$('undo-redo') as UndoRedoElement;
   }
 
-  private get designSection(): DesignSection {
-    return this.$$('design-section') as DesignSection;
+  private get designer(): DesignerView {
+    return this.$$('designer-view') as DesignerView;
   }
 
   private tabClick(e: Event) {
@@ -110,7 +110,7 @@ export class MainApp extends BaseElement {
   private doOp(e: CustomEvent) {
     const op = e.detail as Op;
     if (op) {
-      this.designSection.doOp(op);
+      this.designer.doOp(op);
     }
   }
 

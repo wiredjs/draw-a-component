@@ -1,4 +1,4 @@
-import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/design-tool';
+import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/designer-common';
 
 export class Selector implements Tool {
   get type(): ToolType {

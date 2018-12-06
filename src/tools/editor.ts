@@ -1,9 +1,10 @@
 import { BaseElement, property, TemplateResult, html, PropertyValues } from '../base-element.js';
-import { Shape, toolManager } from '../designer/design-tool';
+import { toolManager } from '../designer/design-tool';
 import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
 import { UndoableOp } from '../ops.js';
 import { svgNode } from '../utils';
 import { Point } from '../geometry';
+import { Shape } from 'src/designer/designer-common.js';
 
 export const baseStyles: TemplateResult = html`
 <style>

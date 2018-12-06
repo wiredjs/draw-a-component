@@ -1,4 +1,4 @@
-import { Sketcher, SketchDelegate } from '../../designer/design-tool';
+import { Sketcher, SketchDelegate } from '../../designer/designer-common';
 import { Point, isSamePoint } from '../../geometry';
 import { newId } from '../../utils';
 

@@ -1,6 +1,7 @@
 import { BaseElement, html, element, property } from '../base-element.js';
 import { debounce } from '../utils.js';
-import { Shape, SketchDelegate, Sketcher, toolManager, ToolType } from './design-tool.js';
+import { toolManager } from './design-tool.js';
+import { Shape, SketchDelegate, Sketcher, ToolType } from './designer-common.js';
 import { Point } from '../geometry';
 import { UndoableOp } from '../ops.js';
 
