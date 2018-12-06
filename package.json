@@ -1,0 +1,41 @@
+{
+  "name": "draw-a-component",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Draw your own component",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wiredjs/draw-a-component.git"
+  },
+  "keywords": [
+    "draw",
+    "sketchy",
+    "webcomponent",
+    "web component",
+    "custom element",
+    "customelement",
+    "designer",
+    "component designer",
+    "control designer",
+    "widget designer"
+  ],
+  "author": "Preet Shihn <preetshihn@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wiredjs/draw-a-component/issues"
+  },
+  "homepage": "https://github.com/wiredjs/draw-a-component#readme",
+  "devDependencies": {
+    "tslint": "^5.11.0",
+    "typescript": "^3.2.1"
+  },
+  "dependencies": {
+    "@polymer/lit-element": "^0.6.4",
+    "@polymer/polymer": "^3.1.0",
+    "udrd": "0.0.1"
+  }
+}
