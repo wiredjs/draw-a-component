@@ -107,6 +107,12 @@ export class PencilEditor extends ShapeEditor {
     const p: Point = [event.detail.x, event.detail.y];
     const dx = (p[0] - this.originPoint![0]) / ((this.max[0] - this.min[0]) || 1);
     const dy = (p[1] - this.originPoint![1]) / ((this.max[1] - this.min[1]) || 1);
+    const metaKey = !!(event.detail.sourceEvent && event.detail.sourceEvent.shiftKey);
+    let metaShift: Point = [0, 0];
+    if (metaKey) {
+      const dmax = Math.abs(dx); // Math.max(Math.abs(dx), Math.abs(dy));
+      metaShift = [dx ? (dx / Math.abs(dx)) * dmax : 0, dy ? (dy / Math.abs(dy)) * dmax : 0];
+    }
     switch (this.state) {
       case 't': {
         this.shadowShape!.points = scale(this.shape!.points, [1, 1 - dy], this.max);
@@ -129,22 +135,38 @@ export class PencilEditor extends ShapeEditor {
         break;
       }
       case 'tl': {
-        this.shadowShape!.points = scale(this.shape!.points, [1 - dx, 1 - dy], this.max);
+        if (metaKey) {
+          this.shadowShape!.points = scale(this.shape!.points, [1 - metaShift[0], 1 - metaShift[1]], this.max);
+        } else {
+          this.shadowShape!.points = scale(this.shape!.points, [1 - dx, 1 - dy], this.max);
+        }
         this.microTaskRedraw();
         break;
       }
       case 'tr': {
-        this.shadowShape!.points = scale(this.shape!.points, [1 + dx, 1 - dy], [this.min[0], this.max[1]]);
+        if (metaKey) {
+          this.shadowShape!.points = scale(this.shape!.points, [1 + metaShift[0], 1 - metaShift[1]], [this.min[0], this.max[1]]);
+        } else {
+          this.shadowShape!.points = scale(this.shape!.points, [1 + dx, 1 - dy], [this.min[0], this.max[1]]);
+        }
         this.microTaskRedraw();
         break;
       }
       case 'bl': {
-        this.shadowShape!.points = scale(this.shape!.points, [1 - dx, 1 + dy], [this.max[0], this.min[1]]);
+        if (metaKey) {
+          this.shadowShape!.points = scale(this.shape!.points, [1 - metaShift[0], 1 + metaShift[1]], [this.max[0], this.min[1]]);
+        } else {
+          this.shadowShape!.points = scale(this.shape!.points, [1 - dx, 1 + dy], [this.max[0], this.min[1]]);
+        }
         this.microTaskRedraw();
         break;
       }
       case 'br': {
-        this.shadowShape!.points = scale(this.shape!.points, [1 + dx, 1 + dy], this.min);
+        if (metaKey) {
+          this.shadowShape!.points = scale(this.shape!.points, [1 + metaShift[0], 1 + metaShift[1]], this.min);
+        } else {
+          this.shadowShape!.points = scale(this.shape!.points, [1 + dx, 1 + dy], this.min);
+        }
         this.microTaskRedraw();
         break;
       }
