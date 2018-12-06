@@ -87,7 +87,7 @@ export class DesignSection extends BaseElement {
         s = null;
         break;
     }
-    if (s && (!skipSelection)) {
+    if (s && (!skipSelection) && (this.currentTool === 'select')) {
       this.selectedShape = s;
     }
   }
