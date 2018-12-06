@@ -22,9 +22,9 @@ export class MainApp extends BaseElement {
         display: -ms-flexbox;
         display: -webkit-flex;
         display: flex;
-        -ms-flex-direction: column;
-        -webkit-flex-direction: column;
-        flex-direction: column;
+        -ms-flex-direction: row;
+        -webkit-flex-direction: row;
+        flex-direction: row;
         height: 100vh;
         overflow: hidden;
       }
@@ -63,45 +63,44 @@ export class MainApp extends BaseElement {
         background: var(--medium-grey);
       }
     </style>
-    <div id="toolbar" class="horizontal layout center">
-      <div class="flex">Draw A Component</div>
-      <div id="appControls">
-        <button id="undoBtn" disabled title="Undo" @click="${() => this.ur.undo()}">
-          <dac-icon icon="undo"></dac-icon>
-          <div>Undo</div>
-        </button>
-        <button id="redoBtn" disabled title="Redo" @click="${() => this.ur.redo()}">
-          <dac-icon icon="redo"></dac-icon>
-          <div>Redo</div>
-        </button>
-        <button id="downloadBtn" disabled title="Download component">
-          <dac-icon icon="download"></dac-icon>
-          <div>Save</div>
-        </button>
-      </div>
-    </div>
-    <div class="flex horizontal layout">
-      <div class="flex vertical layout">
-        <div id="tabBar" class="horizontal layout center">
-          <dac-tab-bar .selected="${this.selectedTab}" class="flex">
-            <dac-tab name="design" @click="${this.tabClick}"><button>Design</button></dac-tab>
-            <dac-tab name="preview" @click="${this.tabClick}"><button>Preview</button></dac-tab>
-          </dac-tab-bar>
+    <div class="flex vertical layout">
+      <div id="toolbar" class="horizontal layout center">
+        <div class="flex">Draw A Component</div>
+        <div id="appControls">
+          <button id="undoBtn" disabled title="Undo" @click="${() => this.ur.undo()}">
+            <dac-icon icon="undo"></dac-icon>
+            <div>Undo</div>
+          </button>
+          <button id="redoBtn" disabled title="Redo" @click="${() => this.ur.redo()}">
+            <dac-icon icon="redo"></dac-icon>
+            <div>Redo</div>
+          </button>
+          <button id="downloadBtn" disabled title="Download component">
+            <dac-icon icon="download"></dac-icon>
+            <div>Save</div>
+          </button>
         </div>
-        <main class="flex horizontal layout">
-          <designer-view class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></designer-view>
-          <div class="flex" style="${this.selectedTab === 'preview' ? '' : 'display: none;'}">
-            <p>Preview goes here</p>
-          </div>
-        </main>
       </div>
-      <div style="${this.selectedTab === 'design' ? '' : 'display: none;'}" class="drawer vertical layout">
-        <dac-tab-bar .selected="${this.drawerTab}">
-          <dac-tab name="props" @click="${this.drawerTabClick}"><button>Properties</button></dac-tab>
-          <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Layers</button></dac-tab>
+      <div id="tabBar" class="horizontal layout center">
+        <dac-tab-bar .selected="${this.selectedTab}" class="flex">
+          <dac-tab name="design" @click="${this.tabClick}"><button>Design</button></dac-tab>
+          <dac-tab name="preview" @click="${this.tabClick}"><button>Preview</button></dac-tab>
         </dac-tab-bar>
       </div>
+      <main class="flex horizontal layout">
+        <designer-view class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></designer-view>
+        <div class="flex" style="${this.selectedTab === 'preview' ? '' : 'display: none;'}">
+          <p>Preview goes here</p>
+        </div>
+      </main>
     </div>
+    <div style="${this.selectedTab === 'design' ? '' : 'display: none;'}" class="drawer vertical layout">
+      <dac-tab-bar .selected="${this.drawerTab}">
+        <dac-tab name="props" @click="${this.drawerTabClick}"><button>Properties</button></dac-tab>
+        <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Layers</button></dac-tab>
+      </dac-tab-bar>
+    </div>
+
     <undo-redo @do-op="${this.doOp}" @undo-state-change="${this.updateUndoState}"></undo-redo>
     `;
   }
