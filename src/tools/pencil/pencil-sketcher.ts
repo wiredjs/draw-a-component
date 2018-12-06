@@ -1,4 +1,4 @@
-import { Sketcher, SketchDelegate } from '../../designer/design-tool';
+import { Sketcher, SketchDelegate } from '../../designer/designer-common.js';
 import { newId } from '../../utils';
 import { Point } from '../../geometry';
 

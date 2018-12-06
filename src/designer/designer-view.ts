@@ -1,17 +1,35 @@
 import { BaseElement, html, element, property } from '../base-element.js';
 import { flexStyles } from '../flex-styles.js';
-import { Shape, ToolType, toolManager } from './design-tool.js';
+import { toolManager } from './design-tool.js';
 import { DesignCanvas } from './design-canvas';
 import { PropertyValues } from '@polymer/lit-element';
 import { UndoableOp, Op } from '../ops.js';
+import { Selector } from '../tools/selector/selector.js';
+import { Pencil } from '../tools/pencil/pencil.js';
+import { Rectangle } from '../tools/rectangle/rectangle.js';
+import { Ellipse } from '../tools/ellipse/ellipse.js';
+import { Line } from '../tools/line/line.js';
+import { ToolType, Shape } from './designer-common.js';
+
 import './design-palette.js';
 import './design-slate';
 import './design-canvas';
 
-@element('design-section')
-export class DesignSection extends BaseElement {
+@element('designer-view')
+export class DesignerView extends BaseElement {
   @property() currentTool: ToolType = 'pencil';
   @property() selectedShape: Shape | null = null;
+
+  constructor() {
+    super();
+    toolManager.initialize([
+      new Selector(),
+      new Pencil(),
+      new Rectangle(),
+      new Ellipse(),
+      new Line()
+    ]);
+  }
 
   render() {
     const slateClass = (this.currentTool === 'select') ? 'hidden' : '';

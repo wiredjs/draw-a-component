@@ -1,4 +1,4 @@
-import { Shape } from './designer/design-tool';
+import { Shape } from './designer/designer-common';
 
 export type OpType = 'add' | 'update' | 'delete';
 
