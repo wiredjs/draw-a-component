@@ -12,6 +12,7 @@ import './components/undo-redo.js';
 @element('main-app')
 export class MainApp extends BaseElement {
   @property() selectedTab = 'design';
+  @property() drawerTab = 'props';
 
   render() {
     return html`
@@ -54,6 +55,13 @@ export class MainApp extends BaseElement {
       #appControls button:hover {
         transform: scale(1.1);
       }
+      .drawer {
+        min-width: 270px;
+        width: 270px;
+        height: 100%;
+        overflow: hidden;
+        background: var(--medium-grey);
+      }
     </style>
     <div id="toolbar" class="horizontal layout center">
       <div class="flex">Draw A Component</div>
@@ -72,16 +80,26 @@ export class MainApp extends BaseElement {
         </button>
       </div>
     </div>
-    <div id="tabBar" class="horizontal layout center">
-      <dac-tab-bar .selected="${this.selectedTab}" class="flex">
-        <dac-tab name="design" @click="${this.tabClick}"><button>Design</button></dac-tab>
-        <dac-tab name="preview" @click="${this.tabClick}"><button>Preview</button></dac-tab>
-      </dac-tab-bar>
-    </div>
-    <main class="flex horizontal layout">
-      <designer-view class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></designer-view>
-      <div class="flex" style="${this.selectedTab === 'preview' ? '' : 'display: none;'}">
-        <p>Preview goes here</p>
+    <div class="flex horizontal layout">
+      <div class="flex vertical layout">
+        <div id="tabBar" class="horizontal layout center">
+          <dac-tab-bar .selected="${this.selectedTab}" class="flex">
+            <dac-tab name="design" @click="${this.tabClick}"><button>Design</button></dac-tab>
+            <dac-tab name="preview" @click="${this.tabClick}"><button>Preview</button></dac-tab>
+          </dac-tab-bar>
+        </div>
+        <main class="flex horizontal layout">
+          <designer-view class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></designer-view>
+          <div class="flex" style="${this.selectedTab === 'preview' ? '' : 'display: none;'}">
+            <p>Preview goes here</p>
+          </div>
+        </main>
+      </div>
+      <div style="${this.selectedTab === 'design' ? '' : 'display: none;'}" class="drawer vertical layout">
+        <dac-tab-bar .selected="${this.drawerTab}">
+          <dac-tab name="props" @click="${this.drawerTabClick}"><button>Properties</button></dac-tab>
+          <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Layers</button></dac-tab>
+        </dac-tab-bar>
       </div>
     </div>
     <undo-redo @do-op="${this.doOp}" @undo-state-change="${this.updateUndoState}"></undo-redo>
@@ -98,6 +116,10 @@ export class MainApp extends BaseElement {
 
   private tabClick(e: Event) {
     this.selectedTab = (e.currentTarget as HTMLElement).getAttribute('name') || 'design';
+  }
+
+  private drawerTabClick(e: Event) {
+    this.drawerTab = (e.currentTarget as HTMLElement).getAttribute('name') || 'design';
   }
 
   private onOp(e: CustomEvent) {
