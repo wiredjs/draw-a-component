@@ -1,9 +1,13 @@
 import { BaseElement, html, element, property } from './base-element.js';
 import { flexStyles } from './flex-styles.js';
+import { UndoableOp, Op } from './ops.js';
+import { UndoRedoElement } from './components/undo-redo.js';
+import { DesignSection } from './designer/design-section';
 import './components/dac-tab-bar';
 import './components/dac-tab';
 import './components/dac-icon';
 import './designer/design-section';
+import './components/undo-redo.js';
 
 @element('main-app')
 export class MainApp extends BaseElement {
@@ -54,11 +58,11 @@ export class MainApp extends BaseElement {
     <div id="toolbar" class="horizontal layout center">
       <div class="flex">Draw A Component</div>
       <div id="appControls">
-        <button id="undoBtn" disabled title="Undo">
+        <button id="undoBtn" disabled title="Undo" @click="${() => this.ur.undo()}">
           <dac-icon icon="undo"></dac-icon>
           <div>Undo</div>
         </button>
-        <button id="redoBtn" disabled title="Undo">
+        <button id="redoBtn" disabled title="Redo" @click="${() => this.ur.redo()}">
           <dac-icon icon="redo"></dac-icon>
           <div>Redo</div>
         </button>
@@ -75,15 +79,44 @@ export class MainApp extends BaseElement {
       </dac-tab-bar>
     </div>
     <main class="flex horizontal layout">
-      <design-section class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}"></design-section>
+      <design-section class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></design-section>
       <div class="flex" style="${this.selectedTab === 'preview' ? '' : 'display: none;'}">
         <p>Preview goes here</p>
       </div>
     </div>
+    <undo-redo @do-op="${this.doOp}" @undo-state-change="${this.updateUndoState}"></undo-redo>
     `;
+  }
+
+  private get ur(): UndoRedoElement {
+    return this.$$('undo-redo') as UndoRedoElement;
+  }
+
+  private get designSection(): DesignSection {
+    return this.$$('design-section') as DesignSection;
   }
 
   private tabClick(e: Event) {
     this.selectedTab = (e.currentTarget as HTMLElement).getAttribute('name') || 'design';
+  }
+
+  private onOp(e: CustomEvent) {
+    const uop = e.detail as UndoableOp;
+    if (uop) {
+      this.ur.push(uop);
+    }
+  }
+
+  private doOp(e: CustomEvent) {
+    const op = e.detail as Op;
+    if (op) {
+      this.designSection.doOp(op);
+    }
+  }
+
+  private updateUndoState(e: CustomEvent) {
+    const detail = e.detail;
+    (this.$('undoBtn') as HTMLButtonElement).disabled = !detail.canUndo;
+    (this.$('redoBtn') as HTMLButtonElement).disabled = !detail.canRedo;
   }
 }
