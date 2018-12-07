@@ -3,11 +3,13 @@ import { flexStyles } from './flex-styles.js';
 import { UndoableOp, Op } from './ops.js';
 import { UndoRedoElement } from './components/undo-redo.js';
 import { DesignerView } from './designer/designer-view';
+
 import './components/dac-tab-bar';
 import './components/dac-tab';
 import './components/dac-icon';
 import './designer/designer-view';
 import './components/undo-redo.js';
+import './designer/layers/layers-view';
 
 @element('main-app')
 export class MainApp extends BaseElement {
@@ -100,6 +102,11 @@ export class MainApp extends BaseElement {
         color: white;
         display: none;
       }
+      .drawerContent {
+        overflow: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
 
       @media (max-width: 1000px) {
         #drawerBuffer {
@@ -160,6 +167,9 @@ export class MainApp extends BaseElement {
           <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Shapes</button></dac-tab>
         </dac-tab-bar>
         <dac-icon id="closeDrawer" icon="close" @click="${this.closeDrawer}" title="Close"></dac-icon>
+        <div class="flex drawerContent">
+          <layers-view></layers-view>
+        </div>
       </div>
     </div>
 
