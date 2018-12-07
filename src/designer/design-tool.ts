@@ -21,10 +21,3 @@ export class ToolManager {
   }
 }
 export const toolManager = new ToolManager();
-
-
-// this.tools.push(new Selector());
-// this.tools.push(new Pencil());
-// this.tools.push(new Rectangle());
-// this.tools.push(new Ellipse());
-// this.tools.push(new Line());

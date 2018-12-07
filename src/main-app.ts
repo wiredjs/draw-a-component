@@ -12,8 +12,11 @@ import './components/undo-redo.js';
 @element('main-app')
 export class MainApp extends BaseElement {
   @property() selectedTab = 'design';
+  @property() drawerTab = 'props';
 
   render() {
+    const designOnly = this.selectedTab === 'design' ? '' : 'display: none;';
+    const previewOnly = this.selectedTab === 'preview' ? '' : 'display: none;';
     return html`
     ${flexStyles}
     <style>
@@ -54,6 +57,67 @@ export class MainApp extends BaseElement {
       #appControls button:hover {
         transform: scale(1.1);
       }
+      #drawerBuffer {
+        min-width: 270px;
+        width: 270px;
+        height: 100%;
+        overflow: hidden;
+        background: var(--medium-grey);
+      }
+      .drawer {
+        min-width: 270px;
+        width: 270px;
+        height: 100%;
+        overflow: hidden;
+        background: var(--medium-grey);
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate3d(0,0,0);
+        transition: transform 0.3s ease-out;
+      }
+      #drawerGlass {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+      }
+      #bodyPanel {
+        position: relative;
+      }
+      .hidden {
+        display: none;
+      }
+      #openDrawer, #closeDrawer {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 7px 8px;
+        cursor: pointer;
+        color: white;
+        display: none;
+      }
+
+      @media (max-width: 1000px) {
+        #drawerBuffer {
+          display: none;
+        }
+        .drawer {
+          transform: translate3d(280px,0,0);
+        }
+        .drawer.open {
+          transform: translate3d(0,0,0);
+        }
+        #drawerGlass.open {
+          display: block;
+        }
+        #openDrawer, #closeDrawer {
+          display: block;
+        }
+      }
     </style>
     <div id="toolbar" class="horizontal layout center">
       <div class="flex">Draw A Component</div>
@@ -72,18 +136,33 @@ export class MainApp extends BaseElement {
         </button>
       </div>
     </div>
-    <div id="tabBar" class="horizontal layout center">
-      <dac-tab-bar .selected="${this.selectedTab}" class="flex">
-        <dac-tab name="design" @click="${this.tabClick}"><button>Design</button></dac-tab>
-        <dac-tab name="preview" @click="${this.tabClick}"><button>Preview</button></dac-tab>
-      </dac-tab-bar>
-    </div>
-    <main class="flex horizontal layout">
-      <designer-view class="flex" style="${this.selectedTab === 'design' ? '' : 'display: none;'}" @op="${this.onOp}"></designer-view>
-      <div class="flex" style="${this.selectedTab === 'preview' ? '' : 'display: none;'}">
-        <p>Preview goes here</p>
+    <div id="bodyPanel" class="flex horizontal layout">
+      <div class="flex vertical layout">
+        <div id="tabBar" class="horizontal layout center">
+          <dac-tab-bar .selected="${this.selectedTab}" class="flex">
+            <dac-tab name="design" @click="${this.tabClick}"><button>Design</button></dac-tab>
+            <dac-tab name="preview" @click="${this.tabClick}"><button>Preview</button></dac-tab>
+          </dac-tab-bar>
+        </div>
+        <main class="flex horizontal layout">
+          <designer-view class="flex" style="${designOnly}" @op="${this.onOp}"></designer-view>
+          <div class="flex" style="${previewOnly}">
+            <p>Preview goes here</p>
+          </div>
+        </main>
+      </div>
+      <dac-icon style="${designOnly}" id="openDrawer" icon="more" @click="${this.openDrawer}" title="Properties and Shapes"></dac-icon>
+      <div style="${designOnly}" id="drawerBuffer"></div>
+      <div id="drawerGlass" @click="${this.closeDrawer}"></div>
+      <div style="${designOnly}" class="drawer vertical layout">
+        <dac-tab-bar .selected="${this.drawerTab}">
+          <dac-tab name="props" @click="${this.drawerTabClick}"><button>Properties</button></dac-tab>
+          <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Shapes</button></dac-tab>
+        </dac-tab-bar>
+        <dac-icon id="closeDrawer" icon="close" @click="${this.closeDrawer}" title="Close"></dac-icon>
       </div>
     </div>
+
     <undo-redo @do-op="${this.doOp}" @undo-state-change="${this.updateUndoState}"></undo-redo>
     `;
   }
@@ -98,6 +177,10 @@ export class MainApp extends BaseElement {
 
   private tabClick(e: Event) {
     this.selectedTab = (e.currentTarget as HTMLElement).getAttribute('name') || 'design';
+  }
+
+  private drawerTabClick(e: Event) {
+    this.drawerTab = (e.currentTarget as HTMLElement).getAttribute('name') || 'design';
   }
 
   private onOp(e: CustomEvent) {
@@ -118,5 +201,15 @@ export class MainApp extends BaseElement {
     const detail = e.detail;
     (this.$('undoBtn') as HTMLButtonElement).disabled = !detail.canUndo;
     (this.$('redoBtn') as HTMLButtonElement).disabled = !detail.canRedo;
+  }
+
+  private openDrawer() {
+    this.$$('.drawer').classList.add('open');
+    this.$('drawerGlass').classList.add('open');
+  }
+
+  private closeDrawer() {
+    this.$$('.drawer').classList.remove('open');
+    this.$('drawerGlass').classList.remove('open');
   }
 }

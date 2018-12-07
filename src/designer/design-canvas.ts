@@ -42,13 +42,6 @@ export class DesignCanvas extends BaseElement {
     `;
   }
 
-  // private clearSvg() {
-  //   const svg = this.$$('svg');
-  //   while (svg.hasChildNodes()) {
-  //     svg.removeChild(svg.lastChild!);
-  //   }
-  // }
-
   private get svg(): SVGSVGElement {
     return this.$$('svg') as any as SVGSVGElement;
   }

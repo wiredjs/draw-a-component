@@ -68,6 +68,7 @@ export class DesignerView extends BaseElement {
       <design-slate .currentTool="${this.currentTool}" class="${slateClass}" @op="${this.handleOp}"></design-slate>
       <div id="editorPanel" class="hidden" @op="${this.handleOp}"></div>
     </div>
+    
     `;
   }
 
