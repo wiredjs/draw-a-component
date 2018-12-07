@@ -151,13 +151,13 @@ export class MainApp extends BaseElement {
           </div>
         </main>
       </div>
-      <dac-icon style="${designOnly}" id="openDrawer" icon="more" @click="${this.openDrawer}" title="Properties and Layers"></dac-icon>
+      <dac-icon style="${designOnly}" id="openDrawer" icon="more" @click="${this.openDrawer}" title="Properties and Shapes"></dac-icon>
       <div style="${designOnly}" id="drawerBuffer"></div>
       <div id="drawerGlass" @click="${this.closeDrawer}"></div>
       <div style="${designOnly}" class="drawer vertical layout">
         <dac-tab-bar .selected="${this.drawerTab}">
           <dac-tab name="props" @click="${this.drawerTabClick}"><button>Properties</button></dac-tab>
-          <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Layers</button></dac-tab>
+          <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Shapes</button></dac-tab>
         </dac-tab-bar>
         <dac-icon id="closeDrawer" icon="close" @click="${this.closeDrawer}" title="Close"></dac-icon>
       </div>
