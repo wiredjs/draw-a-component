@@ -34,6 +34,10 @@ export class VectorModel {
   private selectionId: string | null = null;
   private currentTool: ToolType = 'pencil';
 
+  get layers(): Layer[] {
+    return this.list;
+  }
+
   op(o: Op, updateSelection: boolean) {
     let s: Shape | null = o.shape;
     switch (o.type) {
@@ -115,6 +119,15 @@ export class VectorModel {
         id: this.selectionId,
         layer: this.selectionId && this.map.get(this.selectionId)
       });
+    }
+  }
+
+  setLayerVisibility(id: string, visible: boolean) {
+    if (this.map.has(id)) {
+      const l = this.map.get(id)!;
+      l.visible = visible;
+      bus.dispatch('layer-visibility', l);
+      this.selected = null;
     }
   }
 }
