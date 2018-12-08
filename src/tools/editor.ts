@@ -78,6 +78,7 @@ export abstract class ShapeEditor extends BaseElement {
     if (this.shape) {
       this.state = 'default';
       this.focus();
+      this.attachListeners();
     }
   }
 
@@ -116,6 +117,9 @@ export abstract class ShapeEditor extends BaseElement {
 
   private detachListeners() {
     const overlay = this.$('overlay');
+    if (!overlay) {
+      return;
+    }
     this.removeEventListener('keydown', this.keyboardListener);
     removeListener(overlay, 'up', this.overlayUpHandler);
     removeListener(overlay, 'down', this.overlayDownHandler);
@@ -123,8 +127,11 @@ export abstract class ShapeEditor extends BaseElement {
   }
 
   private attachListeners() {
-    this.detachListeners();
     const overlay = this.$('overlay');
+    if (!overlay) {
+      return;
+    }
+    this.detachListeners();
     this.addEventListener('keydown', this.keyboardListener);
     addListener(overlay, 'up', this.overlayUpHandler);
     addListener(overlay, 'down', this.overlayDownHandler);
