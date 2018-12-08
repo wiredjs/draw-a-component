@@ -1,7 +1,8 @@
 import { BaseElement, html, element } from '../base-element.js';
 import { toolManager } from './design-tool.js';
 import { svgNode } from '../utils';
-import { Shape } from './designer-common.js';
+import { Shape, model, Layer } from '../model';
+import { bus } from '../bus.js';
 
 interface ShapeItem {
   shape: Shape;
@@ -42,11 +43,24 @@ export class DesignCanvas extends BaseElement {
     `;
   }
 
+  firstUpdated() {
+    bus.subscribe('select', () => this.refreshSelection());
+    bus.subscribe('new-shape', (_, l: Layer) => {
+      this.addShape(l.shape);
+    });
+    bus.subscribe('delete-shape', (_, id: string) => {
+      this.deleteShape(id);
+    });
+    bus.subscribe('update-shape', (_, s: Shape) => {
+      this.updateShape(s);
+    });
+  }
+
   private get svg(): SVGSVGElement {
     return this.$$('svg') as any as SVGSVGElement;
   }
 
-  addShape(shape: Shape) {
+  private addShape(shape: Shape) {
     if (shape && shape.type) {
       const g = this.renderShape(shape);
       if (g) {
@@ -56,7 +70,7 @@ export class DesignCanvas extends BaseElement {
     }
   }
 
-  updateShape(shape: Shape) {
+  private updateShape(shape: Shape) {
     if (shape && this.shapeMap.has(shape.id)) {
       const current = this.shapeMap.get(shape.id)!;
       this.renderShape(shape, current.node);
@@ -64,11 +78,11 @@ export class DesignCanvas extends BaseElement {
     }
   }
 
-  deleteShape(shape: Shape) {
-    if (shape && this.shapeMap.has(shape.id)) {
-      const current = this.shapeMap.get(shape.id)!;
+  private deleteShape(shapeId: string) {
+    if (shapeId && this.shapeMap.has(shapeId)) {
+      const current = this.shapeMap.get(shapeId)!;
       current.node.parentElement!.removeChild(current.node);
-      this.shapeMap.delete(shape.id);
+      this.shapeMap.delete(shapeId);
     }
   }
 
@@ -87,7 +101,7 @@ export class DesignCanvas extends BaseElement {
         g.appendChild(node);
         g.addEventListener('click', (e) => {
           e.stopPropagation();
-          this.onSelect(shape.id);
+          model.selected = shape.id;
         });
         return g;
       }
@@ -96,16 +110,11 @@ export class DesignCanvas extends BaseElement {
   }
 
   private onBgClick() {
-    this.fireEvent('select');
+    model.selected = null;
   }
 
-  private onSelect(shapeId: string) {
-    if (this.shapeMap.has(shapeId)) {
-      this.fireEvent('select', this.shapeMap.get(shapeId)!.shape);
-    }
-  }
-
-  set selected(id: string | null) {
+  private refreshSelection() {
+    const id = model.selected;
     if (id !== this.selectedId) {
       if (this.selectedId) {
         const s = this.shapeMap.get(this.selectedId);

@@ -1,15 +1,14 @@
 import { BaseElement, html, element, property } from '../base-element.js';
 import { flexStyles } from '../flex-styles.js';
 import { toolManager } from './design-tool.js';
-import { DesignCanvas } from './design-canvas';
-import { PropertyValues } from '@polymer/lit-element';
-import { UndoableOp, Op } from '../ops.js';
 import { Selector } from '../tools/selector/selector.js';
 import { Pencil } from '../tools/pencil/pencil.js';
 import { Rectangle } from '../tools/rectangle/rectangle.js';
 import { Ellipse } from '../tools/ellipse/ellipse.js';
 import { Line } from '../tools/line/line.js';
-import { ToolType, Shape } from './designer-common.js';
+import { ToolType } from './designer-common.js';
+import { model, Layer } from '../model';
+import { bus } from '../bus';
 
 import './design-palette.js';
 import './design-slate';
@@ -17,8 +16,7 @@ import './design-canvas';
 
 @element('designer-view')
 export class DesignerView extends BaseElement {
-  @property() currentTool: ToolType = 'pencil';
-  @property() selectedShape: Shape | null = null;
+  @property() currentTool: ToolType = model.toolType;
 
   constructor() {
     super();
@@ -62,85 +60,60 @@ export class DesignerView extends BaseElement {
         height: 100%;
       }
     </style>
-    <design-palette .selected="${this.currentTool}" @select="${this.onToolChange}"></design-palette>
+    <design-palette .selected="${this.currentTool}"></design-palette>
     <div class="flex" style="position: relative;">
-      <design-canvas .selected="${this.selectedShape ? this.selectedShape.id : null}" id="dc" @select="${this.onSelect}"></design-canvas>
-      <design-slate .currentTool="${this.currentTool}" class="${slateClass}" @op="${this.handleOp}"></design-slate>
-      <div id="editorPanel" class="hidden" @op="${this.handleOp}"></div>
+      <design-canvas></design-canvas>
+      <design-slate .currentTool="${this.currentTool}" class="${slateClass}"></design-slate>
+      <div id="editorPanel" class="hidden"></div>
     </div>
-    
     `;
   }
 
-  get canvas(): DesignCanvas {
-    return this.$('dc') as DesignCanvas;
-  }
-
-  private onToolChange(e: CustomEvent) {
-    this.currentTool = e.detail.name;
-    this.selectedShape = null;
-  }
-
-  private handleOp(e: CustomEvent) {
-    const uop = e.detail as UndoableOp;
-    if (uop) {
-      this.doOp(uop.do, true);
-    }
-  }
-
-  doOp(op: Op, skipSelection?: boolean) {
-    let s: Shape | null = op.shape;
-    switch (op.type) {
-      case 'add':
-        this.canvas.addShape(s);
-        break;
-      case 'delete':
-        this.selectedShape = null;
-        this.canvas.deleteShape(s);
-        s = null;
-        break;
-      case 'update':
-        this.canvas.updateShape(s);
-        break;
-      default:
-        s = null;
-        break;
-    }
-    if (s && (!skipSelection) && (this.currentTool === 'select')) {
-      this.selectedShape = s;
-    }
-  }
-
-  private onSelect(e: CustomEvent) {
-    const shape = e.detail as Shape;
-    if (shape) {
-      this.selectedShape = shape;
-    } else {
-      this.selectedShape = null;
-    }
-  }
-
-  updated(changedProperties: PropertyValues) {
-    if (changedProperties.has('selectedShape')) {
-      this.refreshEditor();
-    }
-  }
-
-  private refreshEditor() {
-    let editor: HTMLElement | null = null;
-    if (this.selectedShape) {
-      const tool = toolManager.byType(this.selectedShape.type);
-      editor = tool.editor(this.selectedShape);
-    }
-    const ep = this.$('editorPanel');
-    if (editor) {
-      ep.classList.remove('hidden');
-      while (ep.lastChild) {
-        ep.removeChild(ep.lastChild);
+  firstUpdated() {
+    bus.subscribe('select', (_, d) => {
+      const selectedShape = (d.layer && (d.layer as Layer).shape) || null;
+      let editor: HTMLElement | null = null;
+      if (selectedShape) {
+        const tool = toolManager.byType(selectedShape.type);
+        editor = tool.editor(selectedShape);
       }
-      ep.appendChild(editor);
-    } else {
-      ep.classList.add('hidden');
-    }
+      const ep = this.$('editorPanel');
+      if (editor) {
+        ep.classList.remove('hidden');
+        while (ep.lastChild) {
+          ep.removeChild(ep.lastChild);
+        }
+        ep.appendChild(editor);
+      } else {
+        ep.classList.add('hidden');
+      }
+    });
+
+    bus.subscribe('tool-select', (_, d) => {
+      this.currentTool = d.type || 'pencil';
+    });
   }
+
+  // private doOp(op: Op, skipSelection?: boolean) {
+  //   let s: Shape | null = op.shape;
+  //   switch (op.type) {
+  //     case 'add':
+  //       this.canvas.addShape(s);
+  //       break;
+  //     case 'delete':
+  //       this.selectedShape = null;
+  //       this.canvas.deleteShape(s);
+  //       s = null;
+  //       break;
+  //     case 'update':
+  //       this.canvas.updateShape(s);
+  //       break;
+  //     default:
+  //       s = null;
+  //       break;
+  //   }
+  //   if (s && (!skipSelection) && (this.currentTool === 'select')) {
+  //     this.selectedShape = s;
+  //   }
+  // }
 }

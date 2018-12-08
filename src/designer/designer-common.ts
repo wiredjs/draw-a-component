@@ -1,4 +1,5 @@
 import { Point } from '../geometry';
+import { Shape } from '../model';
 
 export type ToolType = 'select' | 'pencil' | 'rectangle' | 'ellipse' | 'line';
 
@@ -20,11 +21,4 @@ export interface Sketcher {
 
 export interface SketchDelegate {
   addShape(shape: Shape): void;
-}
-
-export interface Shape {
-  id: string;
-  type: ToolType;
-  points: Point[];
-  properties?: any;
 }

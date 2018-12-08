@@ -1,10 +1,10 @@
 import { BaseElement, property, TemplateResult, html, PropertyValues } from '../base-element.js';
 import { toolManager } from '../designer/design-tool';
 import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
-import { UndoableOp } from '../ops.js';
 import { svgNode } from '../utils';
 import { Point } from '../geometry';
-import { Shape } from 'src/designer/designer-common.js';
+import { Shape, UndoableOp } from '../model';
+import { bus } from '..//bus.js';
 
 export const baseStyles: TemplateResult = html`
 <style>
@@ -70,8 +70,11 @@ export abstract class ShapeEditor extends BaseElement {
   private overlayTrackHandler = (e: Event) => this.overlayTrack(e as CustomEvent);
   private keyboardListener = this.onKeyDown.bind(this);
 
+  private connected = false;
+
   connectedCallback() {
     super.connectedCallback();
+    this.connected = true;
     if (this.shape) {
       this.state = 'default';
       this.focus();
@@ -80,24 +83,34 @@ export abstract class ShapeEditor extends BaseElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.connected = false;
     this.detachListeners();
   }
 
   firstUpdated() {
     this.tabIndex = 0;
+    bus.subscribe('update-shape', (_, s: Shape) => {
+      if (this.connected && this.shape && (this.shape.id === s.id)) {
+        this.shape = s;
+      }
+    });
   }
 
   updated(changedProperties: PropertyValues) {
     if (changedProperties.has('shape')) {
-      this.state = 'default';
-      this.resetShape();
-      this.refreshControls();
-      if (this.shape) {
-        this.attachListeners();
-        this.focus();
-      } else {
-        this.detachListeners();
-      }
+      this.onShapeUpdate();
+    }
+  }
+
+  private onShapeUpdate() {
+    this.state = 'default';
+    this.resetShape();
+    this.refreshControls();
+    if (this.shape) {
+      this.attachListeners();
+      this.focus();
+    } else {
+      this.detachListeners();
     }
   }
 

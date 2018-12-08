@@ -1,9 +1,9 @@
 import { BaseElement, html, element, property } from '../base-element.js';
 import { debounce } from '../utils.js';
 import { toolManager } from './design-tool.js';
-import { Shape, SketchDelegate, Sketcher, ToolType } from './designer-common.js';
+import { Shape, UndoableOp } from '../model';
+import { SketchDelegate, Sketcher, ToolType } from './designer-common.js';
 import { Point } from '../geometry';
-import { UndoableOp } from '../ops.js';
 
 @element('design-slate')
 export class DesignSlate extends BaseElement implements SketchDelegate {
