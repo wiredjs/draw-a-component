@@ -47,6 +47,7 @@ export class MainApp extends BaseElement {
         color: white;
         border: none;
         cursor: pointer;
+        outline: none;
       }
       button[disabled] {
         opacity: 0.3;
@@ -57,6 +58,9 @@ export class MainApp extends BaseElement {
       }
       #appControls button:hover {
         transform: scale(1.1);
+      }
+      #appControls button:active {
+        color: var(--highlight-blue);
       }
       #drawerBuffer {
         min-width: 270px;
