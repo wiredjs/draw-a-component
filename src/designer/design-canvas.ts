@@ -4,14 +4,14 @@ import { svgNode } from '../utils';
 import { Shape, model, Layer } from '../model';
 import { bus } from '../bus.js';
 
-interface ShapeItem {
-  shape: Shape;
+interface LayerNode {
+  layer: Layer;
   node: SVGElement;
 }
 
 @element('design-canvas')
 export class DesignCanvas extends BaseElement {
-  private readonly shapeMap: Map<string, ShapeItem> = new Map();
+  private readonly shapeMap: Map<string, LayerNode> = new Map();
   private selectedId: string | null = null;
 
   render() {
@@ -38,6 +38,9 @@ export class DesignCanvas extends BaseElement {
       .selected {
         stroke: #aaa;
       }
+      .hidden {
+        display: none;
+      }
     </style>
     <svg @click="${this.onBgClick}"></svg>
     `;
@@ -45,27 +48,22 @@ export class DesignCanvas extends BaseElement {
 
   firstUpdated() {
     bus.subscribe('select', () => this.refreshSelection());
-    bus.subscribe('new-shape', (_, l: Layer) => {
-      this.addShape(l.shape);
-    });
-    bus.subscribe('delete-shape', (_, id: string) => {
-      this.deleteShape(id);
-    });
-    bus.subscribe('update-shape', (_, s: Shape) => {
-      this.updateShape(s);
-    });
+    bus.subscribe('new-shape', (_, l: Layer) => this.addShape(l));
+    bus.subscribe('delete-shape', (_, id: string) => this.deleteShape(id));
+    bus.subscribe('update-shape', (_, s: Shape) => this.updateShape(s));
+    bus.subscribe('layer-visibility', (_, l: Layer) => this.updateVisibility(l));
   }
 
   private get svg(): SVGSVGElement {
     return this.$$('svg') as any as SVGSVGElement;
   }
 
-  private addShape(shape: Shape) {
-    if (shape && shape.type) {
-      const g = this.renderShape(shape);
+  private addShape(layer: Layer) {
+    if (layer && layer.shape) {
+      const g = this.renderShape(layer.shape);
       if (g) {
         this.svg.appendChild(g);
-        this.shapeMap.set(shape.id, { shape, node: g });
+        this.shapeMap.set(layer.shape.id, { layer, node: g });
       }
     }
   }
@@ -74,7 +72,7 @@ export class DesignCanvas extends BaseElement {
     if (shape && this.shapeMap.has(shape.id)) {
       const current = this.shapeMap.get(shape.id)!;
       this.renderShape(shape, current.node);
-      current.shape = shape;
+      current.layer.shape = shape;
     }
   }
 
@@ -83,6 +81,17 @@ export class DesignCanvas extends BaseElement {
       const current = this.shapeMap.get(shapeId)!;
       current.node.parentElement!.removeChild(current.node);
       this.shapeMap.delete(shapeId);
+    }
+  }
+
+  private updateVisibility(layer: Layer) {
+    if (layer && this.shapeMap.has(layer.shape.id)) {
+      const node = this.shapeMap.get(layer.shape.id)!.node;
+      if (layer.visible) {
+        node.classList.remove('hidden');
+      } else {
+        node.classList.add('hidden');
+      }
     }
   }
 
