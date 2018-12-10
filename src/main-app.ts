@@ -18,6 +18,7 @@ export class MainApp extends BaseElement {
   render() {
     const designOnly = this.selectedTab === 'design' ? '' : 'display: none;';
     const previewOnly = this.selectedTab === 'preview' ? '' : 'display: none;';
+    const layersOnly = this.drawerTab === 'layers' ? '' : 'display: none;';
     return html`
     ${flexStyles}
     <style>
@@ -171,7 +172,7 @@ export class MainApp extends BaseElement {
         </dac-tab-bar>
         <dac-icon id="closeDrawer" icon="close" @click="${this.closeDrawer}" title="Close"></dac-icon>
         <div class="flex drawerContent">
-          <layers-view @op="${this.onUndoableOp}"></layers-view>
+          <layers-view style="${layersOnly}" @op="${this.onUndoableOp}"></layers-view>
         </div>
       </div>
     </div>
