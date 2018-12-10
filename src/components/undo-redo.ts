@@ -1,6 +1,6 @@
 import { BaseElement, element } from '../base-element.js';
 import UndoRedo from 'udrd';
-import { Op, UndoableOp } from '../ops.js';
+import { Op, UndoableOp, model } from '../model';
 
 @element('undo-redo')
 export class UndoRedoElement extends BaseElement {
@@ -16,16 +16,16 @@ export class UndoRedoElement extends BaseElement {
   undo() {
     const op = this.undoRedo.undo();
     if (op) {
-      this.fireEvent('do-op', op);
       this.refreshCans();
+      model.op(op, true);
     }
   }
 
   redo() {
     const op = this.undoRedo.redo();
     if (op) {
-      this.fireEvent('do-op', op);
       this.refreshCans();
+      model.op(op, true);
     }
   }
 

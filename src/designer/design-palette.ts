@@ -3,6 +3,7 @@ import { property } from '@polymer/lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { toolManager } from './design-tool.js';
 import { Tool } from './designer-common.js';
+import { model } from '../model.js';
 import '../components/dac-icon.js';
 
 @element('design-palette')
@@ -71,7 +72,7 @@ export class DesignPalette extends BaseElement {
         (d) => {
           return html`
             <div>
-              <button name="${d.type}" class="${this.selected === d.type ? 'selected' : ''}" @click="${() => this.fireEvent('select', { name: d.type })}">
+              <button name="${d.type}" class="${this.selected === d.type ? 'selected' : ''}" @click="${() => model.toolType = d.type}">
                 <dac-icon .icon="${d.icon}"></dac-icon>
                 <div class="buttonName">${d.type}</div>
               </button>

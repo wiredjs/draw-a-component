@@ -1,13 +1,14 @@
 import { BaseElement, html, element, property } from './base-element.js';
 import { flexStyles } from './flex-styles.js';
-import { UndoableOp, Op } from './ops.js';
 import { UndoRedoElement } from './components/undo-redo.js';
-import { DesignerView } from './designer/designer-view';
+import { model, UndoableOp } from './model.js';
+
 import './components/dac-tab-bar';
 import './components/dac-tab';
 import './components/dac-icon';
 import './designer/designer-view';
 import './components/undo-redo.js';
+import './designer/layers/layers-view';
 
 @element('main-app')
 export class MainApp extends BaseElement {
@@ -46,6 +47,7 @@ export class MainApp extends BaseElement {
         color: white;
         border: none;
         cursor: pointer;
+        outline: none;
       }
       button[disabled] {
         opacity: 0.3;
@@ -56,6 +58,9 @@ export class MainApp extends BaseElement {
       }
       #appControls button:hover {
         transform: scale(1.1);
+      }
+      #appControls button:active {
+        color: var(--highlight-blue);
       }
       #drawerBuffer {
         min-width: 270px;
@@ -99,6 +104,11 @@ export class MainApp extends BaseElement {
         cursor: pointer;
         color: white;
         display: none;
+      }
+      .drawerContent {
+        overflow: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       @media (max-width: 1000px) {
@@ -145,7 +155,7 @@ export class MainApp extends BaseElement {
           </dac-tab-bar>
         </div>
         <main class="flex horizontal layout">
-          <designer-view class="flex" style="${designOnly}" @op="${this.onOp}"></designer-view>
+          <designer-view class="flex" style="${designOnly}" @op="${this.onUndoableOp}"></designer-view>
           <div class="flex" style="${previewOnly}">
             <p>Preview goes here</p>
           </div>
@@ -160,19 +170,18 @@ export class MainApp extends BaseElement {
           <dac-tab name="layers" @click="${this.drawerTabClick}"><button>Shapes</button></dac-tab>
         </dac-tab-bar>
         <dac-icon id="closeDrawer" icon="close" @click="${this.closeDrawer}" title="Close"></dac-icon>
+        <div class="flex drawerContent">
+          <layers-view @op="${this.onUndoableOp}"></layers-view>
+        </div>
       </div>
     </div>
 
-    <undo-redo @do-op="${this.doOp}" @undo-state-change="${this.updateUndoState}"></undo-redo>
+    <undo-redo @undo-state-change="${this.updateUndoState}"></undo-redo>
     `;
   }
 
   private get ur(): UndoRedoElement {
     return this.$$('undo-redo') as UndoRedoElement;
-  }
-
-  private get designer(): DesignerView {
-    return this.$$('designer-view') as DesignerView;
   }
 
   private tabClick(e: Event) {
@@ -183,17 +192,11 @@ export class MainApp extends BaseElement {
     this.drawerTab = (e.currentTarget as HTMLElement).getAttribute('name') || 'design';
   }
 
-  private onOp(e: CustomEvent) {
+  private onUndoableOp(e: CustomEvent) {
     const uop = e.detail as UndoableOp;
     if (uop) {
       this.ur.push(uop);
-    }
-  }
-
-  private doOp(e: CustomEvent) {
-    const op = e.detail as Op;
-    if (op) {
-      this.designer.doOp(op);
+      model.op(uop.do, false);
     }
   }
 

@@ -1,10 +1,10 @@
 import { BaseElement, property, TemplateResult, html, PropertyValues } from '../base-element.js';
 import { toolManager } from '../designer/design-tool';
 import { addListener, removeListener } from '@polymer/polymer/lib/utils/gestures';
-import { UndoableOp } from '../ops.js';
 import { svgNode } from '../utils';
 import { Point } from '../geometry';
-import { Shape } from 'src/designer/designer-common.js';
+import { Shape, UndoableOp } from '../model';
+import { bus } from '..//bus.js';
 
 export const baseStyles: TemplateResult = html`
 <style>
@@ -70,39 +70,56 @@ export abstract class ShapeEditor extends BaseElement {
   private overlayTrackHandler = (e: Event) => this.overlayTrack(e as CustomEvent);
   private keyboardListener = this.onKeyDown.bind(this);
 
+  private connected = false;
+
   connectedCallback() {
     super.connectedCallback();
+    this.connected = true;
     if (this.shape) {
       this.state = 'default';
       this.focus();
+      this.attachListeners();
     }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.connected = false;
     this.detachListeners();
   }
 
   firstUpdated() {
     this.tabIndex = 0;
+    bus.subscribe('update-shape', (_, s: Shape) => {
+      if (this.connected && this.shape && (this.shape.id === s.id)) {
+        this.shape = s;
+      }
+    });
   }
 
   updated(changedProperties: PropertyValues) {
     if (changedProperties.has('shape')) {
-      this.state = 'default';
-      this.resetShape();
-      this.refreshControls();
-      if (this.shape) {
-        this.attachListeners();
-        this.focus();
-      } else {
-        this.detachListeners();
-      }
+      this.onShapeUpdate();
+    }
+  }
+
+  private onShapeUpdate() {
+    this.state = 'default';
+    this.resetShape();
+    this.refreshControls();
+    if (this.shape) {
+      this.attachListeners();
+      this.focus();
+    } else {
+      this.detachListeners();
     }
   }
 
   private detachListeners() {
     const overlay = this.$('overlay');
+    if (!overlay) {
+      return;
+    }
     this.removeEventListener('keydown', this.keyboardListener);
     removeListener(overlay, 'up', this.overlayUpHandler);
     removeListener(overlay, 'down', this.overlayDownHandler);
@@ -110,8 +127,11 @@ export abstract class ShapeEditor extends BaseElement {
   }
 
   private attachListeners() {
-    this.detachListeners();
     const overlay = this.$('overlay');
+    if (!overlay) {
+      return;
+    }
+    this.detachListeners();
     this.addEventListener('keydown', this.keyboardListener);
     addListener(overlay, 'up', this.overlayUpHandler);
     addListener(overlay, 'down', this.overlayDownHandler);
@@ -234,8 +254,8 @@ export abstract class ShapeEditor extends BaseElement {
         case 46:
           // delete
           const ops: UndoableOp = {
-            do: { type: 'delete', shape: this.shape! },
-            undo: { type: 'add', shape: this.shape! }
+            do: { type: 'delete', shapeId: this.shape!.id },
+            undo: { type: 'add', shapeId: this.shape!.id, data: this.shape! }
           };
           this.fireEvent('op', ops);
           break;
@@ -262,8 +282,8 @@ export abstract class ShapeEditor extends BaseElement {
     const shadowString = JSON.stringify(this.shadowShape);
     if (shadowString !== this.shapeString) {
       const ops: UndoableOp = {
-        do: { type: 'update', shape: JSON.parse(shadowString) as Shape },
-        undo: { type: 'update', shape: JSON.parse(JSON.stringify(this.shape)) as Shape }
+        do: { type: 'update', shapeId: this.shadowShape!.id, data: JSON.parse(shadowString) as Shape },
+        undo: { type: 'update', shapeId: this.shadowShape!.id, data: JSON.parse(JSON.stringify(this.shape)) as Shape }
       };
       this.fireEvent('op', ops);
       this.shape = JSON.parse(shadowString) as Shape;

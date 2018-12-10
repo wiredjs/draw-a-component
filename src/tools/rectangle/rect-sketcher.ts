@@ -1,4 +1,5 @@
-import { Sketcher, SketchDelegate, Shape } from '../../designer/designer-common';
+import { Sketcher, SketchDelegate } from '../../designer/designer-common';
+import { Shape } from '../../model';
 import { newId } from '../../utils';
 import { Point, normalizeRect, isSamePoint } from '../../geometry';
 

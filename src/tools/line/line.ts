@@ -1,4 +1,5 @@
-import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/designer-common';
+import { Sketcher, SketchDelegate, Tool, ToolType } from '../../designer/designer-common';
+import { Shape } from '../../model';
 import { LineSketcher } from './line-sketcher';
 import { svgNode } from '../../utils';
 import { LineEditor } from './line-editor';

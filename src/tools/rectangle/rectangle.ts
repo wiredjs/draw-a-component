@@ -1,4 +1,5 @@
-import { Sketcher, SketchDelegate, Tool, ToolType, Shape } from '../../designer/designer-common';
+import { Sketcher, SketchDelegate, Tool, ToolType } from '../../designer/designer-common';
+import { Shape } from '../../model';
 import { RectSketcher } from './rect-sketcher';
 import { svgNode } from '../../utils';
 import { RectangleEditor } from './rectangle-editor';
