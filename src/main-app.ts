@@ -171,7 +171,7 @@ export class MainApp extends BaseElement {
         </dac-tab-bar>
         <dac-icon id="closeDrawer" icon="close" @click="${this.closeDrawer}" title="Close"></dac-icon>
         <div class="flex drawerContent">
-          <layers-view></layers-view>
+          <layers-view @op="${this.onUndoableOp}"></layers-view>
         </div>
       </div>
     </div>

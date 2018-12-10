@@ -254,8 +254,8 @@ export abstract class ShapeEditor extends BaseElement {
         case 46:
           // delete
           const ops: UndoableOp = {
-            do: { type: 'delete', shape: this.shape! },
-            undo: { type: 'add', shape: this.shape! }
+            do: { type: 'delete', shapeId: this.shape!.id },
+            undo: { type: 'add', shapeId: this.shape!.id, data: this.shape! }
           };
           this.fireEvent('op', ops);
           break;
@@ -282,8 +282,8 @@ export abstract class ShapeEditor extends BaseElement {
     const shadowString = JSON.stringify(this.shadowShape);
     if (shadowString !== this.shapeString) {
       const ops: UndoableOp = {
-        do: { type: 'update', shape: JSON.parse(shadowString) as Shape },
-        undo: { type: 'update', shape: JSON.parse(JSON.stringify(this.shape)) as Shape }
+        do: { type: 'update', shapeId: this.shadowShape!.id, data: JSON.parse(shadowString) as Shape },
+        undo: { type: 'update', shapeId: this.shadowShape!.id, data: JSON.parse(JSON.stringify(this.shape)) as Shape }
       };
       this.fireEvent('op', ops);
       this.shape = JSON.parse(shadowString) as Shape;

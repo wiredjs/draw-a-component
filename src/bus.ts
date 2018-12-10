@@ -1,27 +1,34 @@
 export type MessageHandler = (name: string, data?: any) => void;
 
 export class MessageBus {
-  private listeners: { [key: string]: MessageHandler[] } = {};
+  private listeners: Map<string, Map<number, MessageHandler>> = new Map();
+  private counter = 0;
 
-  subscribe(name: string, handler: MessageHandler) {
-    if (!this.listeners[name]) {
-      this.listeners[name] = [handler];
-    } else {
-      this.listeners[name].push(handler);
+  subscribe(name: string, handler: MessageHandler): number {
+    if (!this.listeners.has(name)) {
+      this.listeners.set(name, new Map());
     }
+    this.listeners.get(name)!.set(++this.counter, handler);
+    return this.counter;
+  }
+
+  unsubscrive(name: string, token: number): boolean {
+    if (this.listeners.has(name)) {
+      return this.listeners.get(name)!.delete(token);
+    }
+    return false;
   }
 
   async dispatch(name: string, value?: any): Promise<void> {
-    const keys = this.listeners[name];
-    if (keys && keys.length) {
-      for (let i = 0; i < keys.length; i++) {
-        const w = keys[i];
+    const map = this.listeners.get(name);
+    if (map) {
+      map.forEach(async (handler) => {
         try {
-          await w(name, value);
+          await handler(name, value);
         } catch (err) {
           console.error(err);
         }
-      }
+      });
     }
   }
 }

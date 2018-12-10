@@ -2,11 +2,12 @@ import { Point } from './geometry';
 import { bus } from './bus';
 
 export type ToolType = 'select' | 'pencil' | 'rectangle' | 'ellipse' | 'line';
-export type OpType = 'add' | 'update' | 'delete';
+export type OpType = 'add' | 'update' | 'delete' | 'visibility';
 
 export interface Op {
   type: OpType;
-  shape: Shape;
+  shapeId: string;
+  data?: Shape | boolean;
 }
 
 export interface UndoableOp {
@@ -39,37 +40,49 @@ export class VectorModel {
   }
 
   op(o: Op, updateSelection: boolean) {
-    let s: Shape | null = o.shape;
+    let sid: string | null = o.shapeId;
+    const data = o.data;
     switch (o.type) {
       case 'add': {
         const l: Layer = {
           selected: false,
-          shape: s,
+          shape: data as Shape,
           visible: true
         };
         this.list.push(l);
-        this.map.set(s.id, l);
-        this.indices.set(s.id, this.list.length - 1);
+        this.map.set(sid, l);
+        this.indices.set(sid, this.list.length - 1);
         bus.dispatch('new-shape', l);
         break;
       }
       case 'delete': {
         this.selected = null;
-        this.map.delete(s.id);
+        this.map.delete(sid);
         const index = this.indices.get('s.id');
         if (typeof index !== undefined) {
-          this.indices.delete(s.id);
+          this.indices.delete(sid);
           this.list.splice(index!, 1);
         }
-        bus.dispatch('delete-shape', s.id);
-        s = null;
+        bus.dispatch('delete-shape', sid);
+        sid = null;
         break;
       }
       case 'update': {
-        if (this.map.has(s.id)) {
-          this.map.get(s.id)!.shape = s;
+        if (this.map.has(sid)) {
+          const s = data as Shape;
+          this.map.get(sid)!.shape = s;
           this.list[this.indices.get(s.id)!].shape = s;
           bus.dispatch('update-shape', s);
+        }
+        break;
+      }
+      case 'visibility': {
+        if (this.map.has(sid)) {
+          const l = this.map.get(sid)!;
+          l.visible = data as boolean;
+          sid = null;
+          this.selected = null;
+          bus.dispatch('layer-visibility', l);
         }
         break;
       }
@@ -77,8 +90,8 @@ export class VectorModel {
         s: null;
         break;
     }
-    if (s && updateSelection && this.currentTool === 'select') {
-      this.selected = s.id;
+    if (sid && updateSelection && this.currentTool === 'select') {
+      this.selected = sid;
     }
   }
 
@@ -119,15 +132,6 @@ export class VectorModel {
         id: this.selectionId,
         layer: this.selectionId && this.map.get(this.selectionId)
       });
-    }
-  }
-
-  setLayerVisibility(id: string, visible: boolean) {
-    if (this.map.has(id)) {
-      const l = this.map.get(id)!;
-      l.visible = visible;
-      bus.dispatch('layer-visibility', l);
-      this.selected = null;
     }
   }
 }
