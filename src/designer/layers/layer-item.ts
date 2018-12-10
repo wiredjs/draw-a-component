@@ -1,6 +1,6 @@
 import { BaseElement, html, element, property } from '../../base-element.js';
 import { flexStyles } from '../../flex-styles.js';
-import { Layer, UndoableOp } from '../../model';
+import { Layer, UndoableOp, model } from '../../model';
 import { bus } from '../../bus';
 import '../../components/dac-icon';
 
@@ -38,9 +38,16 @@ export class LayerItem extends BaseElement {
     </style>
     <div class="horizontal layout center">
       <dac-icon icon="eye" class="${this.layer.visible ? '' : 'transparent'}" @click="${this.toggleVisibility}"></dac-icon>
-      <div class="name flex">${this.layer.shape.type}</div>
+      <div class="name flex" @click="${this.selectLayer}">${this.layer.shape.type}</div>
     </div>
     `;
+  }
+
+  private selectLayer() {
+    if (this.layer && this.layer.visible) {
+      model.toolType = 'select';
+      model.selected = this.layer.shape.id;
+    }
   }
 
   private toggleVisibility() {
@@ -59,7 +66,6 @@ export class LayerItem extends BaseElement {
       bus.unsubscrive('layer-visibility', this.listenerToken);
       delete this.listenerToken;
     }
-
   }
 
   connectedCallback() {
