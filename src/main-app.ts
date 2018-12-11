@@ -9,6 +9,7 @@ import './components/dac-icon';
 import './designer/designer-view';
 import './components/undo-redo.js';
 import './designer/layers/layers-view';
+import './designer/properties/property-list';
 
 @element('main-app')
 export class MainApp extends BaseElement {
@@ -19,6 +20,7 @@ export class MainApp extends BaseElement {
     const designOnly = this.selectedTab === 'design' ? '' : 'display: none;';
     const previewOnly = this.selectedTab === 'preview' ? '' : 'display: none;';
     const layersOnly = this.drawerTab === 'layers' ? '' : 'display: none;';
+    const propsOnly = this.drawerTab === 'props' ? '' : 'display: none;';
     return html`
     ${flexStyles}
     <style>
@@ -173,6 +175,7 @@ export class MainApp extends BaseElement {
         <dac-icon id="closeDrawer" icon="close" @click="${this.closeDrawer}" title="Close"></dac-icon>
         <div class="flex drawerContent">
           <layers-view style="${layersOnly}" @op="${this.onUndoableOp}"></layers-view>
+          <property-list style="${propsOnly}"></property-list>
         </div>
       </div>
     </div>

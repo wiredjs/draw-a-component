@@ -15,17 +15,36 @@ export interface UndoableOp {
   undo: Op;
 }
 
+export type PropType = 'string' | 'number' | 'boolean';
+export type PropValueType = string | number | boolean;
+
+export interface Prop {
+  name: string;
+  type: PropType;
+  defaultValue: PropValueType;
+  value?: PropValueType;
+  css?: string;
+}
+
 export interface Shape {
   id: string;
   type: ToolType;
   points: Point[];
-  properties?: any;
+  properties?: Prop[];
 }
 
 export interface Layer {
   shape: Shape;
   visible: boolean;
   selected: boolean;
+}
+
+export function propValue<T extends PropType>(prop: Prop): T {
+  if (typeof prop.value === 'undefined') {
+    return prop.defaultValue as T;
+  } else {
+    return prop.value as T;
+  }
 }
 
 export class VectorModel {
