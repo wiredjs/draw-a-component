@@ -58,6 +58,7 @@ export class DesignerView extends BaseElement {
         left: 0;
         width: 100%;
         height: 100%;
+        overflow: hidden;
       }
     </style>
     <design-palette .selected="${this.currentTool}"></design-palette>
