@@ -53,6 +53,7 @@ export class VectorModel {
   private indices: Map<string, number> = new Map();
   private selectionId: string | null = null;
   private currentTool: ToolType = 'pencil';
+  private colors = ['transparent', '#000000'];
 
   get layers(): Layer[] {
     return this.list;
@@ -152,6 +153,32 @@ export class VectorModel {
         layer: this.selectionId && this.map.get(this.selectionId)
       });
     }
+  }
+
+  get bgColor(): string {
+    return this.colors[0] || 'transparent';
+  }
+
+  set bgColor(v: string) {
+    if (this.colors[0] !== v) {
+      this.colors[0] = v;
+      this.onColorChange();
+    }
+  }
+
+  get fgColor(): string {
+    return this.colors[1] || '#000000';
+  }
+
+  set fgColor(v: string) {
+    if (this.colors[1] !== v) {
+      this.colors[1] = v;
+      this.onColorChange();
+    }
+  }
+
+  private onColorChange() {
+    bus.dispatch('colors', { bg: this.bgColor, fg: this.fgColor });
   }
 }
 

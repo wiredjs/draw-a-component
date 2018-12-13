@@ -5,6 +5,7 @@ import { toolManager } from './design-tool.js';
 import { Tool } from './designer-common.js';
 import { model } from '../model.js';
 import '../components/dac-icon.js';
+import '../components/color-input.js';
 
 @element('design-palette')
 export class DesignPalette extends BaseElement {
@@ -79,6 +80,7 @@ export class DesignPalette extends BaseElement {
             </div>
           `;
         })}
+    <color-input></color-input>
     `;
   }
 }
