@@ -53,7 +53,7 @@ export class VectorModel {
   private indices: Map<string, number> = new Map();
   private selectionId: string | null = null;
   private currentTool: ToolType = 'pencil';
-  private colors = ['transparent', '#000000'];
+  private colors = ['', '#000000'];
 
   get layers(): Layer[] {
     return this.list;
@@ -78,8 +78,8 @@ export class VectorModel {
       case 'delete': {
         this.selected = null;
         this.map.delete(sid);
-        const index = this.indices.get('s.id');
-        if (typeof index !== undefined) {
+        const index = this.indices.get(sid);
+        if (typeof index !== 'undefined') {
           this.indices.delete(sid);
           this.list.splice(index!, 1);
         }
@@ -156,7 +156,7 @@ export class VectorModel {
   }
 
   get bgColor(): string {
-    return this.colors[0] || 'transparent';
+    return this.colors[0] || '';
   }
 
   set bgColor(v: string) {

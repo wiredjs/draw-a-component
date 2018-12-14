@@ -116,7 +116,7 @@ export class ColorInput extends BaseElement {
   }
 
   private defaultColors() {
-    model.bgColor = 'transparent';
+    model.bgColor = '';
     model.fgColor = '#000000';
   }
 
