@@ -25,24 +25,31 @@ export class ColorInput extends BaseElement {
       .selected {
         z-index: 1;
       }
-      #bg {
+      #fg, #bg {
         height: 30px;
         width: 30px;
         position: absolute;
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+      #bg {
         top: 4px;
         left: 3px;
         background-color: var(--draw-color-bg);
-        border: 1px solid rgba(255,255,255,0.3);
       }
       #fg {
-        height: 16px;
-        width: 16px;
-        position: absolute;
         top: 21px;
         right: 3px;
-        border: 8px solid;
-        background: var(--medium-grey);
-        border-color: var(--draw-color-fg);
+        background-color: var(--draw-color-fg);
+      }
+      #fgblocker {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        background-color: var(--medium-grey);
+        border: 1px solid rgba(255,255,255,0.2);
+        width: 16px;
+        height: 16px;
+        transform: translate3d(-9px,-9px,0);
       }
       input[type="color"] {
         position: absolute;
@@ -53,12 +60,6 @@ export class ColorInput extends BaseElement {
         padding: 0;
         margin: 0;
         opacity: 0;
-      }
-      #fgColor {
-        top: -8px;
-        left: -8px;
-      }
-      #bgColor {
         top: -1px;
         left: -1px;
       }
@@ -88,6 +89,7 @@ export class ColorInput extends BaseElement {
         <input id="bgColor" type="color" @input="${this.onBgChange}">
       </div>
       <div id="fg" title="Stroke color" @click="${() => this.selected = 'fg'}">
+        <div id="fgblocker"></div>
         <input id="fgColor" type="color" @input="${this.onFgChange}">
       </div>
     </div>
