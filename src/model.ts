@@ -119,6 +119,17 @@ export class VectorModel {
       this.currentTool = v;
       this.selected = null;
       bus.dispatch('tool-select', { type: v });
+      switch (v) {
+        case 'line':
+        case 'pencil':
+          this.fill = 'transparent';
+          if (this.stroke === 'transparent' || this.stroke === 'rgba(0,0,0,0)') {
+            this.stroke = '#000000';
+          }
+          break;
+        default:
+          break;
+      }
     }
   }
 
