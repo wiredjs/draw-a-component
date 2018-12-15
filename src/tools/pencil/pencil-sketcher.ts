@@ -1,6 +1,7 @@
 import { Sketcher, SketchDelegate } from '../../designer/designer-common.js';
 import { newId } from '../../utils';
 import { Point } from '../../geometry';
+import { model } from '../../model';
 
 export class PencilSketcher implements Sketcher {
   private delegate?: SketchDelegate;
@@ -41,7 +42,8 @@ export class PencilSketcher implements Sketcher {
       this.delegate.addShape({
         id: newId(),
         type: 'pencil',
-        points: this.points
+        points: this.points,
+        props: model.currentSketchProps()
       });
     }
     this.reset();

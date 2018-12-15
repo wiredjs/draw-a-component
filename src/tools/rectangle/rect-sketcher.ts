@@ -1,6 +1,7 @@
 import { Sketcher, SketchDelegate } from '../../designer/designer-common';
 import { Shape } from '../../model';
 import { newId } from '../../utils';
+import { model } from '../../model';
 import { Point, normalizeRect, isSamePoint } from '../../geometry';
 
 export class RectSketcher implements Sketcher {
@@ -52,7 +53,8 @@ export class RectSketcher implements Sketcher {
       const shape: Shape = {
         id: newId(),
         type: 'rectangle',
-        points: [this.p1!, this.p2!]
+        points: [this.p1!, this.p2!],
+        props: model.currentSketchProps()
       };
       normalizeRect(shape.points);
       this.delegate.addShape(shape);

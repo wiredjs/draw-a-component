@@ -1,6 +1,7 @@
 import { Sketcher, SketchDelegate } from '../../designer/designer-common';
 import { Point, isSamePoint } from '../../geometry';
 import { newId } from '../../utils';
+import { model } from '../../model';
 
 export class EllipseSketcher implements Sketcher {
   private delegate?: SketchDelegate;
@@ -56,7 +57,8 @@ export class EllipseSketcher implements Sketcher {
       this.delegate.addShape({
         id: newId(),
         type: 'ellipse',
-        points: [this.p1!, this.p2!]
+        points: [this.p1!, this.p2!],
+        props: model.currentSketchProps()
       });
     }
   }

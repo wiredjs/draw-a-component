@@ -1,6 +1,7 @@
 import { Sketcher, SketchDelegate } from '../../designer/designer-common';
 import { Shape } from '../../model';
 import { newId } from '../../utils';
+import { model } from '../../model';
 import { Point, normalizeLine, isSamePoint } from '../../geometry';
 
 export class LineSketcher implements Sketcher {
@@ -51,10 +52,13 @@ export class LineSketcher implements Sketcher {
     if (this.p1 && this.p2) {
       if (!isSamePoint(this.p1, this.p2)) {
         if (this.delegate) {
+          const props = model.currentSketchProps();
+          props.fill = 'transparent';
           const shape: Shape = {
             id: newId(),
             type: 'line',
-            points: [this.p1, this.p2]
+            points: [this.p1, this.p2],
+            props
           };
           normalizeLine(shape.points);
           this.delegate.addShape(shape);

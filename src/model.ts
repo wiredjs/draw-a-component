@@ -15,22 +15,17 @@ export interface UndoableOp {
   undo: Op;
 }
 
-export type PropType = 'string' | 'number' | 'boolean';
-export type PropValueType = string | number | boolean;
-
-export interface Prop {
-  name: string;
-  type: PropType;
-  defaultValue: PropValueType;
-  value?: PropValueType;
-  css?: string;
+export interface ShapeProps {
+  stroke: string;
+  fill: string;
+  strokeWidth: number;
 }
 
 export interface Shape {
   id: string;
   type: ToolType;
   points: Point[];
-  properties?: Prop[];
+  props: ShapeProps;
 }
 
 export interface Layer {
@@ -39,21 +34,17 @@ export interface Layer {
   selected: boolean;
 }
 
-export function propValue<T extends PropType>(prop: Prop): T {
-  if (typeof prop.value === 'undefined') {
-    return prop.defaultValue as T;
-  } else {
-    return prop.value as T;
-  }
-}
-
 export class VectorModel {
   private list: Layer[] = [];
   private map: Map<string, Layer> = new Map();
   private indices: Map<string, number> = new Map();
   private selectionId: string | null = null;
   private currentTool: ToolType = 'pencil';
-  private colors = ['', '#000000'];
+  private currentProps: ShapeProps = {
+    fill: 'transparent',
+    stroke: '#000000',
+    strokeWidth: 1
+  };
 
   get layers(): Layer[] {
     return this.list;
@@ -155,30 +146,49 @@ export class VectorModel {
     }
   }
 
-  get bgColor(): string {
-    return this.colors[0] || '';
+  get fill(): string {
+    return this.currentProps.fill;
   }
 
-  set bgColor(v: string) {
-    if (this.colors[0] !== v) {
-      this.colors[0] = v;
-      this.onColorChange();
+  set fill(v: string) {
+    if (this.currentProps.fill !== v) {
+      this.currentProps.fill = v;
+      this.onStylePropsChange();
     }
   }
 
-  get fgColor(): string {
-    return this.colors[1] || '#000000';
+  get stroke(): string {
+    return this.currentProps.stroke;
   }
 
-  set fgColor(v: string) {
-    if (this.colors[1] !== v) {
-      this.colors[1] = v;
-      this.onColorChange();
+  set stroke(v: string) {
+    if (this.currentProps.stroke !== v) {
+      this.currentProps.stroke = v;
+      this.onStylePropsChange();
     }
   }
 
-  private onColorChange() {
-    bus.dispatch('colors', { bg: this.bgColor, fg: this.fgColor });
+  get strokeWidth(): number {
+    return this.currentProps.strokeWidth;
+  }
+
+  set strokeWidth(v: number) {
+    if (this.currentProps.strokeWidth !== v) {
+      this.currentProps.strokeWidth = v;
+      this.onStylePropsChange();
+    }
+  }
+
+  private onStylePropsChange() {
+    bus.dispatch('style-props');
+  }
+
+  currentSketchProps(): ShapeProps {
+    return {
+      fill: this.fill,
+      stroke: this.stroke,
+      strokeWidth: this.currentProps.strokeWidth
+    };
   }
 }
 
